@@ -17,4 +17,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           shell: |
-            container | withRegistryAuth ghcr.io ${{ github.token }} env://GITHUB_TOKEN | publish ghcr.io/${{ github.repository }}:$(version)
+            container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN | publish ghcr.io/${{ github.repository }}:$(version)
