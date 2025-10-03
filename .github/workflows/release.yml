@@ -1,0 +1,18 @@
+name: Release
+on:
+  push:
+    tags:
+      # Rough semantic version regexp to only create releases
+      # on complete semantic versions e.g. v1.0.0, but not v1.
+      - v[0-9]+.[0-9]+.[0-9]+*
+permissions:
+  packages: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dagger/dagger-for-github@v8.2.0
+        with:
+          shell: |
+            container | withRegistryAuth ghcr.io ${{ github.token }} env://GITHUB_TOKEN | publish ghcr.io/${{ github.repository }}:$(version)

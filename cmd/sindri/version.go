@@ -5,12 +5,8 @@ import (
 	"strings"
 )
 
-// GoReleaser sets these.
 var (
-	version = "4.0.0"
-	commit  = ""
-	date    = ""
-	builtBy = ""
+	version = ""
 )
 
 // SemVer returns the semantic version of `boiler` as
@@ -22,8 +18,6 @@ func SemVer() string {
 		var (
 			revision string
 			modified bool
-			_        = date
-			_        = builtBy
 		)
 		for _, setting := range buildInfo.Settings {
 			switch setting.Key {
@@ -32,10 +26,6 @@ func SemVer() string {
 			case "vcs.modified":
 				modified = setting.Value == "true"
 			}
-		}
-
-		if revision == "" {
-			revision = commit
 		}
 
 		if revision != "" {

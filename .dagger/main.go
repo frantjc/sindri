@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strings"
 
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
 )
@@ -31,13 +32,13 @@ const (
 	home  = "/home/" + user
 )
 
-func (m *Sindri) Container() *dagger.Container {
+func (m *Sindri) Container(ctx context.Context) *dagger.Container {
 	return dag.Wolfi().
 		Container().
 		WithExec([]string{"addgroup", "-S", group}).
 		WithExec([]string{"adduser", "-S", user, group}).
 		WithUser(user).
-		WithFile(home+"/.local/bin/sindri", m.Binary(), dagger.ContainerWithFileOpts{Expand: true}).
+		WithFile(home+"/.local/bin/sindri", m.Binary(ctx), dagger.ContainerWithFileOpts{Expand: true}).
 		WithEnvVariable("PATH", home+"/.local/bin:$PATH", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("SINDRI_MODULES_DIRECTORY", home+"/.config/sindri/modules", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithDirectory("$SINDRI_MODULES_DIRECTORY", m.Source.Directory("dagger/modules"), dagger.ContainerWithDirectoryOpts{Expand: true, Owner: owner}).
@@ -66,7 +67,7 @@ func (m *Sindri) Service(
 		return nil, err
 	}
 
-	return m.Container().
+	return m.Container(ctx).
 		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithFile(crtPath, dag.File(path.Base(crtPath), caCrtContents + crtContents), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithExposedPort(5000).
@@ -114,13 +115,25 @@ func (m *Sindri) Integration(ctx context.Context) (*dagger.Container, error) {
 		WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
 }
 
-func (m *Sindri) Binary() *dagger.File {
+func (m *Sindri) Version(ctx context.Context) string {
+	version := "0.0.0-unknown"
+
+	ref, err := m.Source.AsGit().LatestVersion().Ref(ctx)
+	if err == nil {
+		version = strings.TrimPrefix(ref, "refs/tags/v")
+	}
+
+	return version
+}
+
+
+func (m *Sindri) Binary(ctx context.Context) *dagger.File {
 	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{".dagger/**", ".github/**", "dagger/modules/**", "e2e/**", "dev/**", "docs/**"},
-		}),
-	}).
-		Build(dagger.GoBuildOpts{Pkg: "./cmd/sindri"})
+			Module: m.Source.Filter(dagger.DirectoryFilterOpts{
+				Exclude: []string{".dagger/**", ".github/**", "dagger/modules/**", "e2e/**", "dev/**", "docs/**"},
+			}),
+		}).
+		Build(dagger.GoBuildOpts{Pkg: "./cmd/sindri", Ldflags: "-s -w -X main.version="+m.Version(ctx)})
 }
 
 func (m *Sindri) Coder() *dagger.LLM {
