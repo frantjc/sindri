@@ -117,7 +117,7 @@ func (m *Sindri) Integration(ctx context.Context) (*dagger.Container, error) {
 func (m *Sindri) Binary() *dagger.File {
 	return dag.Go(dagger.GoOpts{
 		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{".dagger/**", ".github/**", "dagger/**", "e2e/**", "dev/**", "docs/**"},
+			Exclude: []string{".dagger/**", ".github/**", "dagger/modules/**", "e2e/**", "dev/**", "docs/**"},
 		}),
 	}).
 		Build(dagger.GoBuildOpts{Pkg: "./cmd/sindri"})
