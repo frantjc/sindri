@@ -22,7 +22,7 @@ import (
 type DedicatedServerReconciler struct {
 	client.Client
 	record.EventRecorder
-	BoilerHost string
+	Registry string
 }
 
 func (r *DedicatedServerReconciler) getDedicatedServer(ctx context.Context, key client.ObjectKey) (*v1alpha1.DedicatedServer, error) {
@@ -35,18 +35,8 @@ func (r *DedicatedServerReconciler) getDedicatedServer(ctx context.Context, key 
 	return ds, nil
 }
 
-func (r *DedicatedServerReconciler) getSteamapp(ctx context.Context, ds *v1alpha1.DedicatedServer) (*v1alpha1.Steamapp, error) {
-	sa := &v1alpha1.Steamapp{}
-
-	if err := r.Get(ctx, client.ObjectKey{Namespace: ds.Namespace, Name: ds.Spec.Steamapp.Name}, sa); err != nil {
-		return nil, err
-	}
-
-	return sa, nil
-}
-
-func needsHostPort(sa *v1alpha1.Steamapp) bool {
-	return xslices.Some(sa.Spec.Ports, func(port v1alpha1.SteamappPort, _ int) bool {
+func needsHostPort(ds *v1alpha1.DedicatedServer) bool {
+	return xslices.Some(ds.Spec.Ports, func(port v1alpha1.DedicatedServerPort, _ int) bool {
 		return len(port.Protocols) > 1
 	})
 }
@@ -80,65 +70,15 @@ func (r *DedicatedServerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
-	sa, err := r.getSteamapp(ctx, ds)
-	if err != nil {
-		ds.Status.Phase = v1alpha1.PhaseFailed
-		return ctrl.Result{}, r.Status().Update(ctx, ds)
-	}
-
-	if sa.Status.Phase != v1alpha1.PhaseReady {
-		return ctrl.Result{}, nil
-	}
-
 	volumeMounts := []corev1.VolumeMount{}
 	volumes := []corev1.Volume{}
-
-	for _, vol := range sa.Spec.Volumes {
-		var (
-			volumeName = fmt.Sprintf("%s-%s", ds.Name, vol.Name)
-			pvcSpec    = corev1.PersistentVolumeClaimSpec{
-				AccessModes: []corev1.PersistentVolumeAccessMode{
-					corev1.ReadWriteOnce,
-				},
-			}
-			pvc = &corev1.PersistentVolumeClaim{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      volumeName,
-					Namespace: ds.Namespace,
-				},
-				Spec: pvcSpec,
-			}
-		)
-
-		volumes = append(volumes, corev1.Volume{
-			Name: volumeName,
-		})
-
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      volumeName,
-			MountPath: vol.Path,
-		})
-
-		if err := controllerutil.SetControllerReference(ds, pvc, r.Scheme()); err != nil {
-			ds.Status.Phase = v1alpha1.PhaseFailed
-			return ctrl.Result{}, r.Status().Update(ctx, ds)
-		}
-
-		if _, err := controllerutil.CreateOrUpdate(ctx, r, pvc, func() error {
-			pvc.Spec = pvcSpec
-			return controllerutil.SetControllerReference(ds, pvc, r.Scheme())
-		}); err != nil {
-			ds.Status.Phase = v1alpha1.PhaseFailed
-			return ctrl.Result{}, r.Status().Update(ctx, ds)
-		}
-	}
 
 	var (
 		containerPorts = []corev1.ContainerPort{}
 		servicePorts   = []corev1.ServicePort{}
 	)
 
-	for _, port := range sa.Spec.Ports {
+	for _, port := range ds.Spec.Ports {
 		for _, protocol := range port.Protocols {
 			containerPorts = append(containerPorts, corev1.ContainerPort{
 				ContainerPort: port.Port,
@@ -156,17 +96,14 @@ func (r *DedicatedServerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	var (
 		podSpec = corev1.PodSpec{
 			Volumes:     volumes,
-			HostNetwork: needsHostPort(sa),
+			HostNetwork: needsHostPort(ds),
 			Containers: []corev1.Container{
 				{
 					Name:         ds.Name,
-					Image:        fmt.Sprintf("%s/%d:%s", r.BoilerHost, sa.Spec.AppID, sa.Spec.Branch),
+					Image:        fmt.Sprintf("%s/%d:%s", r.Registry, ds.Spec.AppID, ds.Spec.Branch),
 					Ports:        containerPorts,
 					VolumeMounts: volumeMounts,
-					Resources: corev1.ResourceRequirements{
-						Limits:   sa.Spec.Resources,
-						Requests: sa.Spec.Resources,
-					},
+					Resources:    ds.Spec.Resources,
 				},
 			},
 		}
@@ -197,7 +134,7 @@ func (r *DedicatedServerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, r.Status().Update(ctx, ds)
 	}
 
-	if !needsHostPort(sa) {
+	if !needsHostPort(ds) {
 		var (
 			svcSpec = corev1.ServiceSpec{
 				Selector: podLabels,
@@ -217,12 +154,15 @@ func (r *DedicatedServerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			return ctrl.Result{}, r.Status().Update(ctx, ds)
 		}
 
-		if _, err = controllerutil.CreateOrUpdate(ctx, r, svc, func() error {
+		if res, err := controllerutil.CreateOrUpdate(ctx, r, svc, func() error {
 			svc.Spec = svcSpec
 			return controllerutil.SetControllerReference(ds, svc, r.Scheme())
 		}); err != nil {
 			ds.Status.Phase = v1alpha1.PhaseFailed
 			return ctrl.Result{}, r.Status().Update(ctx, ds)
+		} else if res == controllerutil.OperationResultCreated {
+			// If it was just created, wait on it to be reconciled and trigger another reconciliation for us.
+			return ctrl.Result{}, nil
 		}
 
 		for _, ing := range svc.Status.LoadBalancer.Ingress {
@@ -252,6 +192,8 @@ func (r *DedicatedServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.DedicatedServer{}).
+		Owns(&corev1.Pod{}).
+		Owns(&corev1.Service{}).
 		Complete(r); err != nil {
 		return err
 	}

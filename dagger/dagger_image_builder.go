@@ -9,9 +9,9 @@ import (
 
 	"dagger.io/dagger"
 	"github.com/Khan/genqlient/graphql"
+	"github.com/frantjc/sindri"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
-	"github.com/frantjc/sindri"
 )
 
 type ImageBuilder struct {

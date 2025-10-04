@@ -68,8 +68,9 @@ func (m *Sindri) Service(
 	}
 
 	return m.Container(ctx).
+		WithMountedCache(home+"/.cache/sindri", dag.CacheVolume("sindri")).
 		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
-		WithFile(crtPath, dag.File(path.Base(crtPath), caCrtContents + crtContents), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
+		WithFile(crtPath, dag.File(path.Base(crtPath), caCrtContents+crtContents), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithExposedPort(5000).
 		AsService(dagger.ContainerAsServiceOpts{
 			ExperimentalPrivilegedNesting: true,
@@ -81,16 +82,22 @@ func (m *Sindri) Service(
 		}), nil
 }
 
-func (m *Sindri) Unit(ctx context.Context) *dagger.Container {
+func (m *Sindri) Generate() (*dagger.Changeset, error) {
 	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{".dagger/**", ".github/**", ".git/**", "dagger/**", "e2e/**", "dev/**", "docs/**"},
-		}),
+		Module: m.Source,
 	}).
-		Test()
+		Container().
+		WithExec([]string{
+			"go", "install", "sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0",
+		}).
+		WithExec([]string{
+			"controller-gen", "object", "crd", "webhook", "paths='./internal/...'", "output:crd:artifacts:config=internal/config/crd",
+		}).
+		Directory(".").
+		Changes(m.Source), nil
 }
 
-func (m *Sindri) Integration(ctx context.Context) (*dagger.Container, error) {
+func (m *Sindri) Test(ctx context.Context) (*dagger.Container, error) {
 	alias := "sindri.dagger"
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
@@ -126,34 +133,42 @@ func (m *Sindri) Version(ctx context.Context) string {
 	return version
 }
 
-
 func (m *Sindri) Binary(ctx context.Context) *dagger.File {
 	return dag.Go(dagger.GoOpts{
-			Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-				Exclude: []string{".dagger/**", ".github/**", "dagger/modules/**", "e2e/**", "dev/**", "docs/**"},
-			}),
-		}).
-		Build(dagger.GoBuildOpts{Pkg: "./cmd/sindri", Ldflags: "-s -w -X main.version="+m.Version(ctx)})
+		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
+			Exclude: []string{".dagger/**", ".github/**", "dagger/modules/**", "e2e/**"},
+		}),
+	}).
+		Build(dagger.GoBuildOpts{
+			Pkg:     "./cmd/sindri",
+			Ldflags: "-s -w -X main.version=" + m.Version(ctx),
+		})
 }
 
 func (m *Sindri) Coder() *dagger.LLM {
-	return dag.LLM().
-		WithEnv(
-			dag.Env().
-				WithCurrentModule().
-				WithWorkspace(m.Source),
-		).
-		WithBlockedFunction("Sindri", "binary").
-		WithBlockedFunction("Sindri", "container").
-		WithBlockedFunction("Sindri", "service").
-		WithMCPServer(
-			"lsp",
-			dag.Go(dagger.GoOpts{Module: m.Source}).
-				Container().
-				WithExec([]string{"go", "install", "golang.org/x/tools/gopls@latest"}).
-				WithExec([]string{"go", "install", "github.com/isaacphi/mcp-language-server@latest"}).
-				AsService(dagger.ContainerAsServiceOpts{
-					Args: []string{"mcp-language-server", "--workspace", ".", "--lsp", "gopls"},
-				}),
+	return dag.Doug().
+		Agent(
+			dag.LLM().
+				WithEnv(
+					dag.Env().
+						WithCurrentModule().
+						WithWorkspace(m.Source.Filter(dagger.DirectoryFilterOpts{
+							Exclude: []string{".dagger/**", ".github/**"},
+						})),
+				).
+				WithBlockedFunction("Sindri", "binary").
+				WithBlockedFunction("Sindri", "container").
+				WithBlockedFunction("Sindri", "service").
+				WithBlockedFunction("Sindri", "version").
+				WithMCPServer(
+					"lsp",
+					dag.Go(dagger.GoOpts{Module: m.Source}).
+						Container().
+						WithExec([]string{"go", "install", "golang.org/x/tools/gopls@latest"}).
+						WithExec([]string{"go", "install", "github.com/isaacphi/mcp-language-server@latest"}).
+						AsService(dagger.ContainerAsServiceOpts{
+							Args: []string{"mcp-language-server", "--workspace", ".", "--lsp", "gopls"},
+						}),
+				),
 		)
 }

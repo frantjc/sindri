@@ -78,13 +78,13 @@ func (m *Debian) withWinehqSources(container *dagger.Container) *dagger.Containe
 
 func (m *Debian) withWinehqKey(container *dagger.Container) *dagger.Container {
 	var (
-		rawWinehqKeyPath = path.Join("/tmp", path.Base(winehqKeyURL))
+		rawWinehqKeyPath       = path.Join("/tmp", path.Base(winehqKeyURL))
 		dearmoredWinehqKeyPath = path.Join("/tmp", path.Base(winehqArchiveKeyPath))
 	)
 
 	return container.WithFile(
 		winehqArchiveKeyPath,
-		 m.Container("gpg").
+		m.Container("gpg").
 			WithFile(
 				rawWinehqKeyPath,
 				dag.HTTP(winehqKeyURL),

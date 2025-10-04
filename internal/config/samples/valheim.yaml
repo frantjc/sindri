@@ -1,0 +1,9 @@
+---
+apiVersion: sindri.frantj.cc/v1alpha1
+kind: DedicatedServer
+metadata:
+  name: valheim
+spec:
+  appID: 896660
+  ports:
+    - port: 2456

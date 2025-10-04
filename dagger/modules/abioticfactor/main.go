@@ -92,4 +92,3 @@ func getLaunch(appInfo *steamcmd.AppInfo, f func(launch *steamcmd.AppInfoConfigL
 
 	return nil, false
 }
-

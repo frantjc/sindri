@@ -42,7 +42,7 @@ func (m *Satisfactory) Container(
 	steamappDirectoryPath := path.Join("/opt/sindri/steamapps", fmt.Sprint(appID))
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
-		Branch:       branch,
+		Branch: branch,
 	})
 
 	launch, found := getLaunch(appInfo, isLinux)

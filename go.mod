@@ -7,7 +7,6 @@ require (
 	github.com/Khan/genqlient v0.8.1
 	github.com/adrg/xdg v0.5.3
 	github.com/frantjc/go-ingress v0.3.0
-	github.com/frantjc/go-steamcmd v0.0.0-20250814210827-114d014fdfee
 	github.com/frantjc/x v0.0.0-20250812130030-e7e2a3978c7c
 	github.com/go-logr/logr v1.4.3
 	github.com/google/go-containerregistry v0.20.6
@@ -58,7 +57,6 @@ require (
 	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
 	github.com/evanphx/json-patch v5.9.11+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
-	github.com/frantjc/go-encoding-vdf v0.0.0-20250505052333-4ba0456e21d7 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.2 // indirect
