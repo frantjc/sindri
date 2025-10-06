@@ -39,9 +39,10 @@ func (m *Sindri) Container(ctx context.Context) *dagger.Container {
 		Container().
 		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
 		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
-		WithUser(user).
 		WithEnvVariable("PATH", home+"/.local/bin:$PATH", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithFile(home+"/.local/bin/sindri", m.Binary(ctx), dagger.ContainerWithFileOpts{Expand: true, Owner: owner}).
+		WithExec([]string{"chown", "-R", owner, home}).
+		WithUser(user).
 		WithEnvVariable("SINDRI_MODULES_DIRECTORY", home+"/.config/sindri/modules", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithDirectory("$SINDRI_MODULES_DIRECTORY", m.Source.Directory("dagger/modules"), dagger.ContainerWithDirectoryOpts{Expand: true, Owner: owner}).
 		WithEntrypoint([]string{"sindri"})

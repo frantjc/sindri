@@ -57,9 +57,13 @@ func (i *ImageBuilder) BuildImage(ctx context.Context, name, branch string) (sin
 			i.WorkDir = os.TempDir()
 		}
 
+		if err := os.MkdirAll(i.WorkDir, 0700); err != nil {
+			return nil, err
+		}
+
 		tarball := path.Join(i.WorkDir, fmt.Sprintf("%s-%s.tar", module, branch))
 
-		log, err := os.Open(path.Join(i.WorkDir, fmt.Sprintf("%s-%s.log", module, branch)))
+		log, err := os.Create(path.Join(i.WorkDir, fmt.Sprintf("%s-%s.log", module, branch)))
 		if err != nil {
 			return nil, err
 		}
@@ -69,6 +73,7 @@ func (i *ImageBuilder) BuildImage(ctx context.Context, name, branch string) (sin
 		if err != nil {
 			return nil, err
 		}
+		defer dag.Close()
 
 		modulesGit := dag.Git(i.ModulesURL)
 		modulesDirectory := modulesGit.Head().Tree()
