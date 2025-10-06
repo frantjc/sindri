@@ -7,12 +7,13 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/frantjc/sindri"
 	"github.com/frantjc/sindri/dagger"
 	"github.com/frantjc/sindri/internal/api"
-	"github.com/frantjc/sindri/internal/cache"
 	"github.com/frantjc/sindri/internal/controller"
 	"github.com/frantjc/sindri/internal/logutil"
 	"github.com/spf13/cobra"
@@ -22,15 +23,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 )
 
+var (
+	state = path.Join(xdg.StateHome, "sindri")
+	cache = path.Join(xdg.CacheHome, "sindri")
+)
+
 func NewSindri() *cobra.Command {
 	var (
 		port         int
 		bucket       string
 		certFile     string
 		keyFile      string
-		imageBuilder = new(dagger.ImageBuilder)
-		reconciler   = &controller.DedicatedServerReconciler{}
-		cmd          = &cobra.Command{
+		imageBuilder = &dagger.ImageBuilder{
+			WorkDir: state,
+		}
+		reconciler = &controller.DedicatedServerReconciler{}
+		cmd        = &cobra.Command{
 			Use: "sindri",
 			RunE: func(cmd *cobra.Command, _ []string) error {
 				var (
@@ -122,7 +130,7 @@ func NewSindri() *cobra.Command {
 	)
 
 	cmd.Flags().IntVar(&port, "port", 5000, "Port to listen on")
-	cmd.Flags().StringVar(&bucket, "bucket", fmt.Sprintf("file://%s?create_dir=1&no_tmp_dir=1", cache.Dir), "Bucket URL")
+	cmd.Flags().StringVar(&bucket, "bucket", fmt.Sprintf("file://%s?create_dir=1&no_tmp_dir=1", cache), "Bucket URL")
 
 	cmd.Flags().StringVar(&certFile, "tls-crt", "", "TLS certificate file")
 	cmd.Flags().StringVar(&keyFile, "tls-key", "", "TLS private key file")

@@ -11,7 +11,6 @@ import (
 	"github.com/Khan/genqlient/graphql"
 	"github.com/frantjc/sindri"
 	"github.com/frantjc/sindri/internal/httputil"
-	"github.com/frantjc/sindri/internal/logutil"
 )
 
 type ImageBuilder struct {
@@ -41,8 +40,6 @@ var (
 )
 
 func (i *ImageBuilder) BuildImage(ctx context.Context, name, branch string) (sindri.Opener, error) {
-	var _ = logutil.SloggerFrom(ctx)
-
 	if i == nil {
 		i = &ImageBuilder{}
 	}
@@ -62,7 +59,13 @@ func (i *ImageBuilder) BuildImage(ctx context.Context, name, branch string) (sin
 
 		tarball := path.Join(i.WorkDir, fmt.Sprintf("%s-%s.tar", module, branch))
 
-		dag, err := dagger.Connect(ctx)
+		log, err := os.Open(path.Join(i.WorkDir, fmt.Sprintf("%s-%s.log", module, branch)))
+		if err != nil {
+			return nil, err
+		}
+		defer log.Close()
+
+		dag, err := dagger.Connect(ctx, dagger.WithLogOutput(log))
 		if err != nil {
 			return nil, err
 		}

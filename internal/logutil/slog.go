@@ -43,7 +43,7 @@ type SlogConfig struct {
 
 func (s *SlogConfig) init() {
 	if s.level == nil {
-		l := slog.LevelError
+		l := slog.LevelInfo
 		if os.Getenv("DEBUG") != "" {
 			l = slog.LevelDebug
 		}
