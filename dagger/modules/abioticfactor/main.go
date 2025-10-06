@@ -17,6 +17,8 @@ type Abioticfactor struct{}
 
 const (
 	appID = 2857200
+	gid   = "1001"
+	uid   = gid
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
@@ -56,8 +58,8 @@ func (m *Abioticfactor) Container(
 
 	return dag.Debian().
 		Container(dagger.DebianContainerOpts{Packages: []string{"winehq-stable"}}).
-		WithExec([]string{"groupadd", "-r", group}).
-		WithExec([]string{"useradd", "-m", "-g", group, "-r", user}).
+		WithExec([]string{"groupadd", "-r", "-g", gid, group}).
+		WithExec([]string{"useradd", "-m", "-g", group, "-u", uid, "-r", user}).
 		WithDirectory(
 			steamappDirectoryPath,
 			steamappDirectory,

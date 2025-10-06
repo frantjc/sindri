@@ -111,8 +111,9 @@ func (m *LLM) Container(
 		Container(packages).
 		// WithExec([]string{"addgroup", "-S", group}).
 		// WithExec([]string{"adduser", "-S", user, group}).
-		WithExec([]string{"groupadd", "-r", group}).
-		WithExec([]string{"useradd", "-m", "-g", group, "-r", user}).
+
+		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithDirectory(
 			steamappDirectoryPath,
 			steamappDirectory,

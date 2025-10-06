@@ -17,6 +17,8 @@ type Valheim struct{}
 
 const (
 	appID = 896660
+	gid   = "1001"
+	uid   = gid
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
@@ -58,8 +60,8 @@ func (m *Valheim) Container(
 			steamClientSoPath,
 			steamClientSoLinkPath,
 		}).
-		WithExec([]string{"addgroup", "-S", group}).
-		WithExec([]string{"adduser", "-S", user, group}).
+		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithDirectory(
 			steamappDirectoryPath,
 			steamappDirectory,

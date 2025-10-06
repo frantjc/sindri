@@ -17,6 +17,8 @@ type Satisfactory struct{}
 
 const (
 	appID = 1690800
+	gid   = "1001"
+	uid   = gid
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
@@ -52,8 +54,8 @@ func (m *Satisfactory) Container(
 
 	return dag.Wolfi().
 		Container().
-		WithExec([]string{"addgroup", "-S", group}).
-		WithExec([]string{"adduser", "-S", user, group}).
+		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithDirectory(
 			steamappDirectoryPath,
 			steamappDirectory,

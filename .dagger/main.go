@@ -26,6 +26,8 @@ func New(
 }
 
 const (
+	gid   = "1001"
+	uid   = gid
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
@@ -35,8 +37,8 @@ const (
 func (m *Sindri) Container(ctx context.Context) *dagger.Container {
 	return dag.Wolfi().
 		Container().
-		WithExec([]string{"addgroup", "-S", group}).
-		WithExec([]string{"adduser", "-S", user, group}).
+		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithUser(user).
 		WithEnvVariable("PATH", home+"/.local/bin:$PATH", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithFile(home+"/.local/bin/sindri", m.Binary(ctx), dagger.ContainerWithFileOpts{Expand: true, Owner: owner}).

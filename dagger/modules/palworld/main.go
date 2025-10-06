@@ -17,6 +17,8 @@ type Palworld struct{}
 
 const (
 	appID = 2394010
+	gid   = "1001"
+	uid   = gid
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
@@ -54,8 +56,8 @@ func (m *Palworld) Container(
 		Container(dagger.WolfiContainerOpts{
 			Packages: []string{"ca-certificates-bundle"},
 		}).
-		WithExec([]string{"addgroup", "-S", group}).
-		WithExec([]string{"adduser", "-S", user, group}).
+		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithDirectory(
 			steamappDirectoryPath,
 			steamappDirectory,
