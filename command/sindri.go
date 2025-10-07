@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -83,13 +82,15 @@ func NewSindri() *cobra.Command {
 					return srv.Serve(lis)
 				})
 
-				cfg, err := ctrl.GetConfig()
-				if err != nil {
-					return errors.Join(eg.Wait(), err)
+				if reconciler.Registry == "" {
+					log.Error("not running controller due to missing --registry")
+
+					return eg.Wait()
 				}
 
-				if reconciler.Registry == "" {
-					return errors.Join(eg.Wait(), fmt.Errorf("--registry is requried with a kubeconfig"))
+				cfg, err := ctrl.GetConfig()
+				if err != nil {
+					return err
 				}
 
 				scheme, err := api.NewScheme()
@@ -139,7 +140,7 @@ func NewSindri() *cobra.Command {
 	cmd.Flags().StringVar(&imageBuilder.ModulesDirectory, "modules-directory", os.Getenv("SINDRI_MODULES_DIRECTORY"), "Path to Sindri's Dagger modules")
 	cmd.Flags().StringVar(&imageBuilder.ModulesRef, "modules-git-ref", os.Getenv("SINDRI_MODULES_GIT_REF"), "Git ref of Sindri's Dagger modules")
 
-	cmd.Flags().StringVar(&reconciler.Registry, "registry", "", "An address at which the cluster that Sindri is reconciling against can reach Sindri's container registry at")
+	cmd.Flags().StringVar(&reconciler.Registry, "registry", "", "An address at which the cluster that Sindri is reconciling against can reach Sindri's container registry")
 
 	return cmd
 }
