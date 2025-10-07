@@ -34,18 +34,70 @@ const (
 	home  = "/home/" + user
 )
 
-func (m *Sindri) Container(ctx context.Context) *dagger.Container {
+func (m *Sindri) Container(ctx context.Context) (*dagger.Container, error) {
+	version, err := dag.Version(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	osPlatformVersion, err := dag.DefaultPlatform(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	parts := strings.Split(string(osPlatformVersion), "/")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("invalid dagger platform %s", osPlatformVersion)
+	}
+
+	platform := parts[1]
+
+	daggerTgz := dag.HTTP(
+		fmt.Sprintf(
+			"https://github.com/dagger/dagger/releases/download/%s/dagger_%s_linux_%s.tar.gz",
+			version, version, platform,
+		),
+	)
+
+	tmpDaggerTgzPath := "/tmp/dagger.tgz"
+	tmpDaggerPath := "/tmp/dagger"
+
+	kubectl := dag.HTTP(
+		fmt.Sprintf(
+			"https://dl.k8s.io/release/v1.34.0/bin/linux/%s/kubectl",
+			platform,
+		),
+	)
+
 	return dag.Wolfi().
 		Container().
 		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
 		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithEnvVariable("PATH", home+"/.local/bin:$PATH", dagger.ContainerWithEnvVariableOpts{Expand: true}).
-		WithFile(home+"/.local/bin/sindri", m.Binary(ctx), dagger.ContainerWithFileOpts{Expand: true, Owner: owner}).
+		WithFile(
+			home+"/.local/bin/sindri", m.Binary(ctx),
+			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700}).
+		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", home+"/.local/bin/dagger").
+		WithFile(
+			"$_EXPERIMENTAL_DAGGER_CLI_BIN",
+			dag.Wolfi().
+				Container().
+				WithFile(tmpDaggerTgzPath, daggerTgz).
+				WithExec([]string{
+					"tar", "-xzf", tmpDaggerTgzPath, "-C", path.Dir(tmpDaggerPath), path.Base(tmpDaggerPath),
+				}).
+				File(tmpDaggerPath),
+			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700},
+		).
+		WithFile(
+			home+"/.local/bin/kubectl", kubectl,
+			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700},
+		).
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
 		WithEnvVariable("SINDRI_MODULES_DIRECTORY", home+"/.config/sindri/modules", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithDirectory("$SINDRI_MODULES_DIRECTORY", m.Source.Directory("dagger/modules"), dagger.ContainerWithDirectoryOpts{Expand: true, Owner: owner}).
-		WithEntrypoint([]string{"sindri"})
+		WithEntrypoint([]string{"sindri"}), nil
 }
 
 func (m *Sindri) Service(
@@ -70,7 +122,12 @@ func (m *Sindri) Service(
 		return nil, err
 	}
 
-	return m.Container(ctx).
+	container, err := m.Container(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return container.
 		WithMountedCache(home+"/.cache/sindri", dag.CacheVolume("sindri")).
 		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithFile(crtPath, dag.File(path.Base(crtPath), caCrtContents+crtContents), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
