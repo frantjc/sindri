@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/frantjc/sindri/internal/api/v1alpha1"
 	"github.com/frantjc/sindri/internal/logutil"
@@ -86,7 +87,7 @@ func (r *DedicatedServerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 				Protocol:      protocol,
 			})
 			servicePorts = append(servicePorts, corev1.ServicePort{
-				Name:       fmt.Sprintf("%s-%d-%s", ds.Name, port.Port, protocol),
+				Name:       fmt.Sprintf("%s-%d-%s", ds.Name, port.Port, strings.ToLower(string(protocol))),
 				Port:       port.Port,
 				TargetPort: intstr.FromInt32(port.Port),
 				Protocol:   protocol,
