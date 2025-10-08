@@ -36,15 +36,15 @@ func NewSindri() *cobra.Command {
 		imageBuilder = &dagger.ImageBuilder{
 			WorkDir: state,
 		}
+		registry   = &sindri.PullRegistry{ImageBuilder: imageBuilder}
 		reconciler = &controller.DedicatedServerReconciler{}
 		cmd        = &cobra.Command{
 			Use: "sindri",
 			RunE: func(cmd *cobra.Command, _ []string) error {
 				var (
-					eg, ctx  = errgroup.WithContext(cmd.Context())
-					log      = logutil.SloggerFrom(ctx)
-					registry = &sindri.PullRegistry{ImageBuilder: imageBuilder}
-					srv      = &http.Server{
+					eg, ctx = errgroup.WithContext(cmd.Context())
+					log     = logutil.SloggerFrom(ctx)
+					srv     = &http.Server{
 						ReadHeaderTimeout: time.Second * 5,
 						Handler:           registry.Handler(),
 						BaseContext: func(_ net.Listener) context.Context {
@@ -141,6 +141,8 @@ func NewSindri() *cobra.Command {
 	cmd.Flags().StringVar(&imageBuilder.ModulesRef, "modules-git-ref", os.Getenv("SINDRI_MODULES_GIT_REF"), "Git ref of Sindri's Dagger modules")
 
 	cmd.Flags().StringVar(&reconciler.Registry, "registry", "", "An address at which the cluster that Sindri is reconciling against can reach Sindri's container registry")
+
+	cmd.Flags().BoolVar(&registry.UseSignedURLs, "use-signed-urls", false, "Use signed URLs to distribute layers")
 
 	return cmd
 }

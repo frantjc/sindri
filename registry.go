@@ -24,8 +24,9 @@ import (
 )
 
 type PullRegistry struct {
-	ImageBuilder ImageBuilder
-	Bucket       *blob.Bucket
+	ImageBuilder  ImageBuilder
+	Bucket        *blob.Bucket
+	UseSignedURLs bool
 }
 
 const (
@@ -255,12 +256,12 @@ func (p *PullRegistry) headBlob(ctx context.Context, digest string) error {
 	return fmt.Errorf("blob not found: %s", digest)
 }
 
-func (p *PullRegistry) getBlob(ctx context.Context, digest string) (io.ReadCloser, string, error) {
+func (p *PullRegistry) getBlob(ctx context.Context, digest string) (io.ReadCloser, string, string, error) {
 	log := logutil.SloggerFrom(ctx)
 
 	hash, err := v1.NewHash(digest)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	key := path.Join("blobs", hash.String())
@@ -269,15 +270,24 @@ func (p *PullRegistry) getBlob(ctx context.Context, digest string) (io.ReadClose
 
 	attr, err := p.Bucket.Attributes(ctx, key)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
+	}
+
+	if p.UseSignedURLs {
+		signedURL, err := p.Bucket.SignedURL(ctx, key, nil)
+		if err != nil {
+			return nil, "", "", err
+		}
+
+		return nil, "", signedURL, nil
 	}
 
 	rc, err := p.Bucket.NewReader(ctx, key, nil)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
-	return rc, attr.ContentType, nil
+	return rc, attr.ContentType, "", nil
 }
 
 const (
@@ -356,16 +366,20 @@ func (p *PullRegistry) Handler() http.Handler {
 							return
 						}
 
-						blob, mediaType, err := p.getBlob(r.Context(), reference)
+						blob, mediaType, signedURL, err := p.getBlob(r.Context(), reference)
 						if err != nil {
 							log.Error(ep, "err", err.Error())
 							http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
 							return
 						}
+						w.Header().Set(headerDockerContentDigest, reference)
+						if signedURL != "" {
+							http.Redirect(w, r, signedURL, http.StatusTemporaryRedirect)
+							return
+						}
 						defer blob.Close()
 
 						w.Header().Set("Content-Type", mediaType)
-						w.Header().Set(headerDockerContentDigest, reference)
 
 						_, _ = io.Copy(w, blob)
 						return
