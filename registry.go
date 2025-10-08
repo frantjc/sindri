@@ -10,6 +10,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/frantjc/go-ingress"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
@@ -32,7 +33,7 @@ const (
 	defaultBranchName = "public"
 )
 
-func (p *PullRegistry) headManifest(ctx context.Context, name string, reference string) error {
+func (p *PullRegistry) headManifest(ctx context.Context, reference string) error {
 	log := logutil.SloggerFrom(ctx)
 
 	if reference == "latest" {
@@ -52,7 +53,6 @@ func (p *PullRegistry) headManifest(ctx context.Context, name string, reference 
 		defer rc.Close()
 
 		manifest := &v1.Manifest{}
-
 		if err = jsonDecoderStrict(rc).Decode(manifest); err != nil {
 			return err
 		}
@@ -65,6 +65,24 @@ func jsonDecoderStrict(r io.Reader) *json.Decoder {
 	d := json.NewDecoder(r)
 	d.DisallowUnknownFields()
 	return d
+}
+
+// muahahahaha
+func beforeWrite(getContentLength func() (int64, error)) func(func(any) bool) error {
+	return func(asFunc func(any) bool) error {
+		putObjectInput := &s3.PutObjectInput{}
+
+		if asFunc(&putObjectInput) {
+			contentLength, err := getContentLength()
+			if err != nil {
+				return err
+			}
+
+			putObjectInput.ContentLength = &contentLength
+		}
+
+		return nil
+	}
 }
 
 func (p *PullRegistry) getManifest(ctx context.Context, name string, reference string) ([]byte, digest.Digest, string, error) {
@@ -121,29 +139,32 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 
 	eg, egctx := errgroup.WithContext(ctx)
 
-	manifest, err := image.Manifest()
-	if err != nil {
+	manifest := &v1.Manifest{}
+	if err = jsonDecoderStrict(bytes.NewReader(rawManifest)).Decode(manifest); err != nil {
 		return nil, "", "", err
 	}
 
 	eg.Go(func() error {
 		key := path.Join("manifests", dig.String())
 
+		if ok, err := p.Bucket.Exists(egctx, key); ok {
+			return nil
+		} else if err != nil {
+			return err
+		}
+
 		log.Debug("cacheing manifest in bucket", "key", key)
 
-		wc, err := p.Bucket.NewWriter(egctx, key, &blob.WriterOptions{
-			ContentType: string(manifest.MediaType),
-		})
-		if err != nil {
-			return err
-		}
-		defer wc.Close()
-
-		if _, err = wc.Write(rawManifest); err != nil {
+		if err := p.Bucket.WriteAll(egctx, key, rawManifest, &blob.WriterOptions{
+			ContentType: string(manifest.Config.MediaType),
+			BeforeWrite: beforeWrite(func() (int64, error) {
+				return int64(len(rawManifest)), nil
+			}),
+		}); err != nil {
 			return err
 		}
 
-		return wc.Close()
+		return nil
 	})
 
 	eg.Go(func() error {
@@ -157,24 +178,21 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 
 		log.Debug("cacheing image config blob in bucket", "key", key)
 
-		cfgfb, err := image.RawConfigFile()
+		rawConfig, err := image.RawConfigFile()
 		if err != nil {
 			return err
 		}
 
-		wc, err := p.Bucket.NewWriter(egctx, key, &blob.WriterOptions{
+		if err := p.Bucket.WriteAll(egctx, key, rawConfig, &blob.WriterOptions{
 			ContentType: string(manifest.Config.MediaType),
-		})
-		if err != nil {
-			return err
-		}
-		defer wc.Close()
-
-		if _, err := wc.Write(cfgfb); err != nil {
+			BeforeWrite: beforeWrite(func() (int64, error) {
+				return int64(len(rawConfig)), nil
+			}),
+		}); err != nil {
 			return err
 		}
 
-		return wc.Close()
+		return nil
 	})
 
 	layers, err := image.Layers()
@@ -197,7 +215,7 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 				return err
 			}
 
-			log.Debug("cacheing layer blob in bucket", "key", key, "digest", hash.String())
+			log.Debug("cacheing layer blob in bucket", "key", key)
 
 			rc, err := layer.Compressed()
 			if err != nil {
@@ -211,12 +229,13 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 			}
 
 			if err = p.Bucket.Upload(egctx, key, rc, &blob.WriterOptions{
-				ContentType:     string(mediaType),
+				ContentType: string(mediaType),
+				BeforeWrite: beforeWrite(layer.Size),
 			}); err != nil {
 				return err
 			}
 
-			return rc.Close()
+			return nil
 		})
 	}
 
@@ -324,7 +343,7 @@ func (p *PullRegistry) Handler() http.Handler {
 					switch ep {
 					case "manifests":
 						if r.Method == http.MethodHead {
-							if err := p.headManifest(r.Context(), name, reference); err != nil {
+							if err := p.headManifest(r.Context(), reference); err != nil {
 								log.Error(ep, "err", err.Error())
 								http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
 								return
