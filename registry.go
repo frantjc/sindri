@@ -70,12 +70,10 @@ func jsonDecoderStrict(r io.Reader) *json.Decoder {
 func (p *PullRegistry) getManifest(ctx context.Context, name string, reference string) ([]byte, digest.Digest, string, error) {
 	log := logutil.SloggerFrom(ctx)
 
-	dig := digest.Digest(reference)
-
 	if reference == "latest" {
 		// Special handling for mapping the default image tag to the default Steamapp branch name.
 		reference = defaultBranchName
-	} else if dig.Validate() == nil {
+	} else if dig := digest.Digest(reference); dig.Validate() == nil {
 		// If the reference is a digest instead of a Steamapp branch name, it necessarily
 		// must have been generated previously to be retrievable.
 		key := path.Join("manifests", reference)
@@ -113,6 +111,11 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 
 	rawManifest, err := image.RawManifest()
 	if err != nil {
+		return nil, "", "", err
+	}
+
+	dig := digest.FromBytes(rawManifest)
+	if err = dig.Validate(); err != nil {
 		return nil, "", "", err
 	}
 
