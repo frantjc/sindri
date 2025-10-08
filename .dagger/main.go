@@ -77,7 +77,7 @@ func (m *Sindri) Container(ctx context.Context) (*dagger.Container, error) {
 		WithFile(
 			home+"/.local/bin/sindri", m.Binary(ctx),
 			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700}).
-		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", ".local/bin/dagger").
+		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", home+"/.local/bin/dagger").
 		WithFile(
 			"$_EXPERIMENTAL_DAGGER_CLI_BIN",
 			dag.Wolfi().
