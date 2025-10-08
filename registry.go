@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -122,13 +121,18 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 
 	eg, egctx := errgroup.WithContext(ctx)
 
+	manifest, err := image.Manifest()
+	if err != nil {
+		return nil, "", "", err
+	}
+
 	eg.Go(func() error {
 		key := path.Join("manifests", dig.String())
 
 		log.Debug("cacheing manifest in bucket", "key", key)
 
 		wc, err := p.Bucket.NewWriter(egctx, key, &blob.WriterOptions{
-			ContentType: "application/json",
+			ContentType: string(manifest.MediaType),
 		})
 		if err != nil {
 			return err
@@ -141,11 +145,6 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 
 		return wc.Close()
 	})
-
-	manifest, err := image.Manifest()
-	if err != nil {
-		return nil, "", "", err
-	}
 
 	eg.Go(func() error {
 		key := path.Join("blobs", manifest.Config.Digest.String())
@@ -164,7 +163,7 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 		}
 
 		wc, err := p.Bucket.NewWriter(egctx, key, &blob.WriterOptions{
-			ContentType: "application/json",
+			ContentType: string(manifest.Config.MediaType),
 		})
 		if err != nil {
 			return err
@@ -211,20 +210,13 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 				return err
 			}
 
-			wc, err := p.Bucket.NewWriter(egctx, key, &blob.WriterOptions{
+			if err = p.Bucket.Upload(egctx, key, rc, &blob.WriterOptions{
 				ContentType:     string(mediaType),
-				ContentEncoding: "gzip",
-			})
-			if err != nil {
-				return err
-			}
-			defer wc.Close()
-
-			if _, err := io.Copy(wc, rc); err != nil {
+			}); err != nil {
 				return err
 			}
 
-			return errors.Join(rc.Close(), wc.Close())
+			return rc.Close()
 		})
 	}
 
@@ -374,6 +366,7 @@ func (p *PullRegistry) Handler() http.Handler {
 						}
 						w.Header().Set(headerDockerContentDigest, reference)
 						if signedURL != "" {
+							log.Debug("redirecting", "signed-url", signedURL)
 							http.Redirect(w, r, signedURL, http.StatusTemporaryRedirect)
 							return
 						}
