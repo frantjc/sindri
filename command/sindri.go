@@ -83,7 +83,7 @@ func NewSindri() *cobra.Command {
 				})
 
 				if reconciler.Registry == "" {
-					log.Error("not running controller due to missing --registry")
+					log.Warn("not running controller due to missing --registry")
 
 					return eg.Wait()
 				}

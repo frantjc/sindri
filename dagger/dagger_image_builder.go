@@ -11,6 +11,7 @@ import (
 	"github.com/Khan/genqlient/graphql"
 	"github.com/frantjc/sindri"
 	"github.com/frantjc/sindri/internal/httputil"
+	"github.com/google/uuid"
 )
 
 type ImageBuilder struct {
@@ -61,7 +62,7 @@ func (i *ImageBuilder) BuildImage(ctx context.Context, name, branch string) (sin
 			return nil, err
 		}
 
-		tarball := path.Join(i.WorkDir, fmt.Sprintf("%s-%s.tar", module, branch))
+		tarball := path.Join(i.WorkDir, fmt.Sprintf("%s-%s-%s.tar", module, branch, uuid.NewString()))
 
 		log, err := os.Create(path.Join(i.WorkDir, fmt.Sprintf("%s-%s.log", module, branch)))
 		if err != nil {

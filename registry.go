@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/frantjc/go-ingress"
@@ -29,7 +29,7 @@ type PullRegistry struct {
 }
 
 const (
-	DefaultBranchName = "public"
+	defaultBranchName = "public"
 )
 
 func (p *PullRegistry) headManifest(ctx context.Context, name string, reference string) error {
@@ -37,11 +37,11 @@ func (p *PullRegistry) headManifest(ctx context.Context, name string, reference 
 
 	if reference == "latest" {
 		// Special handling for mapping the default image tag to the default Steamapp branch name.
-		reference = DefaultBranchName
+		reference = defaultBranchName
 	}
 
 	if err := digest.Digest(reference).Validate(); err == nil {
-		key := filepath.Join(name, "manifests", reference)
+		key := path.Join("manifests", reference)
 
 		log.Debug("checking bucket for digest reference", "key", key)
 
@@ -74,11 +74,11 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 
 	if reference == "latest" {
 		// Special handling for mapping the default image tag to the default Steamapp branch name.
-		reference = DefaultBranchName
+		reference = defaultBranchName
 	} else if dig.Validate() == nil {
 		// If the reference is a digest instead of a Steamapp branch name, it necessarily
 		// must have been generated previously to be retrievable.
-		key := filepath.Join(name, "manifests", reference)
+		key := path.Join("manifests", reference)
 
 		log.Debug("checking bucket for digest reference", "key", key)
 
@@ -119,7 +119,7 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 	eg, egctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		key := filepath.Join(name, "manifests", dig.String())
+		key := path.Join("manifests", dig.String())
 
 		log.Debug("cacheing manifest in bucket", "key", key)
 
@@ -144,7 +144,7 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 	}
 
 	eg.Go(func() error {
-		key := filepath.Join(name, "blobs", manifest.Config.Digest.String())
+		key := path.Join("blobs", manifest.Config.Digest.String())
 
 		if ok, err := p.Bucket.Exists(egctx, key); ok {
 			return nil
@@ -186,7 +186,7 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 				return err
 			}
 
-			key := filepath.Join(name, "blobs", hash.String())
+			key := path.Join("blobs", hash.String())
 
 			if ok, err := p.Bucket.Exists(egctx, key); ok {
 				return nil
@@ -231,7 +231,7 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 	return rawManifest, dig, string(manifest.MediaType), nil
 }
 
-func (p *PullRegistry) headBlob(ctx context.Context, name string, digest string) error {
+func (p *PullRegistry) headBlob(ctx context.Context, digest string) error {
 	log := logutil.SloggerFrom(ctx)
 
 	hash, err := v1.NewHash(digest)
@@ -239,7 +239,7 @@ func (p *PullRegistry) headBlob(ctx context.Context, name string, digest string)
 		return err
 	}
 
-	key := filepath.Join(name, "blobs", hash.String())
+	key := path.Join("blobs", hash.String())
 
 	log.Debug("checking bucket for digest reference", "key", key)
 
@@ -249,10 +249,10 @@ func (p *PullRegistry) headBlob(ctx context.Context, name string, digest string)
 		return err
 	}
 
-	return fmt.Errorf("blob not found: %s@%s", name, digest)
+	return fmt.Errorf("blob not found: %s", digest)
 }
 
-func (p *PullRegistry) getBlob(ctx context.Context, name string, digest string) (io.ReadCloser, string, error) {
+func (p *PullRegistry) getBlob(ctx context.Context, digest string) (io.ReadCloser, string, error) {
 	log := logutil.SloggerFrom(ctx)
 
 	hash, err := v1.NewHash(digest)
@@ -260,7 +260,7 @@ func (p *PullRegistry) getBlob(ctx context.Context, name string, digest string) 
 		return nil, "", err
 	}
 
-	key := filepath.Join(name, "blobs", hash.String())
+	key := path.Join("blobs", hash.String())
 
 	log.Debug("checking bucket for digest reference", "key", key)
 
@@ -287,7 +287,6 @@ func (p *PullRegistry) Handler() http.Handler {
 			// OCI does not require this, but the Docker v2 spec include it, and GCR sets this.
 			// Docker distribution v2 clients may fallback to an older version if this is not set.
 			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
-			w.WriteHeader(http.StatusOK)
 		}), ingress.WithMatchIgnoreSlash),
 		ingress.PrefixPath("/v2",
 			xhttp.AllowHandler(
@@ -344,7 +343,7 @@ func (p *PullRegistry) Handler() http.Handler {
 						return
 					case "blobs":
 						if r.Method == http.MethodHead {
-							if err := p.headBlob(r.Context(), name, reference); err != nil {
+							if err := p.headBlob(r.Context(), reference); err != nil {
 								log.Error(ep, "err", err.Error())
 								http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
 								return
@@ -354,7 +353,7 @@ func (p *PullRegistry) Handler() http.Handler {
 							return
 						}
 
-						blob, mediaType, err := p.getBlob(r.Context(), name, reference)
+						blob, mediaType, err := p.getBlob(r.Context(), reference)
 						if err != nil {
 							log.Error(ep, "err", err.Error())
 							http.Error(w, err.Error(), httputil.HTTPStatusCode(err))

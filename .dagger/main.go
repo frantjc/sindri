@@ -77,7 +77,7 @@ func (m *Sindri) Container(ctx context.Context) (*dagger.Container, error) {
 		WithFile(
 			home+"/.local/bin/sindri", m.Binary(ctx),
 			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700}).
-		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", home+"/.local/bin/dagger").
+		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", ".local/bin/dagger").
 		WithFile(
 			"$_EXPERIMENTAL_DAGGER_CLI_BIN",
 			dag.Wolfi().
@@ -95,6 +95,7 @@ func (m *Sindri) Container(ctx context.Context) (*dagger.Container, error) {
 		).
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
+		WithWorkdir(home).
 		WithEnvVariable("SINDRI_MODULES_DIRECTORY", home+"/.config/sindri/modules", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithDirectory("$SINDRI_MODULES_DIRECTORY", m.Source.Directory("dagger/modules"), dagger.ContainerWithDirectoryOpts{Expand: true, Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
@@ -106,21 +107,9 @@ func (m *Sindri) Service(
 	// +default="localhost"
 	hostname string,
 ) (*dagger.Service, error) {
-	ca := dag.TLS().Ca()
-
-	caCrtContents, err := ca.Crt().Contents(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	keyPair := ca.KeyPair(hostname)
+	keyPair := dag.TLS().Ca().KeyPair(hostname)
 	crtPath := home + "/.config/sindri/tls.crt"
 	keyPath := home + "/.config/sindri/tls.key"
-
-	crtContents, err := keyPair.Crt().Contents(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	container, err := m.Container(ctx)
 	if err != nil {
@@ -128,9 +117,9 @@ func (m *Sindri) Service(
 	}
 
 	return container.
-		WithMountedCache(home+"/.cache/sindri", dag.CacheVolume("sindri")).
+		WithMountedCache(home+"/.cache/sindri", dag.CacheVolume("sindri"), dagger.ContainerWithMountedCacheOpts{Owner: owner}).
 		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
-		WithFile(crtPath, dag.File(path.Base(crtPath), caCrtContents+crtContents), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
+		WithFile(crtPath, keyPair.Crt(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithExposedPort(5000).
 		AsService(dagger.ContainerAsServiceOpts{
 			ExperimentalPrivilegedNesting: true,
