@@ -21,10 +21,12 @@ import (
 	"github.com/opencontainers/go-digest"
 	"gocloud.dev/blob"
 	"golang.org/x/sync/errgroup"
+	client "github.com/frantjc/steamapps/client"
 )
 
 type PullRegistry struct {
-	ImageBuilder  ImageBuilder
+	Client *client.Client
+	Registry string
 	Bucket        *blob.Bucket
 	UseSignedURLs bool
 }
@@ -116,10 +118,25 @@ func (p *PullRegistry) getManifest(ctx context.Context, name string, reference s
 		return buf.Bytes(), dig, string(manifest.MediaType), nil
 	}
 
-	opener, err := p.ImageBuilder.BuildImage(ctx, name, reference)
+	container := p.Client.Steamapps().Container(name, reference)
+
+	switch p.Registry {
+	case "ghcr.io":
+		address, err := container.Publish(ctx, p.Registry)
+		if err != nil {
+			return nil, "", "", err
+		}
+	}
+
+	tmp := "TODO"
+
+	_, err := container.AsTarball().Export(ctx, tmp)
 	if err != nil {
 		return nil, "", "", err
 	}
+
+	opener := FileOpener(tmp)
+
 	defer opener.Close()
 
 	image, err := tarball.Image(opener.Open, nil)

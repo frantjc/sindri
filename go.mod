@@ -3,8 +3,6 @@ module github.com/frantjc/sindri
 go 1.25.1
 
 require (
-	dagger.io/dagger v0.19.0
-	github.com/Khan/genqlient v0.8.1
 	github.com/adrg/xdg v0.5.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.84.1
 	github.com/frantjc/go-ingress v0.3.0
@@ -25,8 +23,14 @@ require (
 	sigs.k8s.io/controller-runtime v0.22.2
 )
 
+require github.com/frantjc/steamapps v0.0.0-unknown
+
+replace github.com/frantjc/steamapps => ./dagger/steamapps
+
 require (
+	dagger.io/dagger v0.19.2 // indirect
 	github.com/99designs/gqlgen v0.17.80 // indirect
+	github.com/Khan/genqlient v0.8.1 // indirect
 	github.com/aws/aws-sdk-go v1.55.7 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.38.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.11 // indirect

@@ -1,0 +1,43 @@
+{
+  "name": "steamapps",
+  "engineVersion": "v0.19.0",
+  "sdk": {
+    "source": "go"
+  },
+  "dependencies": [
+    {
+      "name": "abioticfactor",
+      "source": "modules/abioticfactor"
+    },
+    {
+      "name": "astroneer",
+      "source": "modules/astroneer"
+    },
+    {
+      "name": "corekeeper",
+      "source": "modules/corekeeper"
+    },
+    {
+      "name": "enshrouded",
+      "source": "modules/enshrouded"
+    },
+    {
+      "name": "palworld",
+      "source": "modules/palworld"
+    },
+    {
+      "name": "satisfactory",
+      "source": "modules/satisfactory"
+    },
+    {
+      "name": "valheim",
+      "source": "modules/valheim"
+    }
+  ],
+  "clients": [
+    {
+      "generator": "go",
+      "directory": "./client"
+    }
+  ]
+}

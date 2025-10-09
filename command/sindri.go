@@ -11,7 +11,6 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/frantjc/sindri"
-	"github.com/frantjc/sindri/dagger"
 	"github.com/frantjc/sindri/internal/api"
 	"github.com/frantjc/sindri/internal/controller"
 	"github.com/frantjc/sindri/internal/logutil"

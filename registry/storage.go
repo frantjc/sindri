@@ -1,0 +1,5 @@
+package registry
+
+func init() {
+
+}
