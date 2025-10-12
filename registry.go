@@ -1,424 +1,137 @@
 package sindri
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
-	"path"
-	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/frantjc/go-ingress"
+	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
-	xhttp "github.com/frantjc/x/net/http"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/tarball"
-	"github.com/google/uuid"
+	"github.com/frantjc/steamapps/dagger"
 	"github.com/opencontainers/go-digest"
-	"gocloud.dev/blob"
-	"golang.org/x/sync/errgroup"
-	client "github.com/frantjc/steamapps/client"
 )
 
-type PullRegistry struct {
-	Client *client.Client
-	Registry string
-	Bucket        *blob.Bucket
-	UseSignedURLs bool
+func Digest(reference string) (digest.Digest, bool) {
+	d := digest.Digest(reference)
+	return d, d.Validate() == nil
 }
 
-const (
-	defaultBranchName = "public"
-)
+func Handler(c *dagger.Client, b backend.Backend) http.Handler {
+	mux := http.NewServeMux()
 
-func (p *PullRegistry) headManifest(ctx context.Context, reference string) error {
-	log := logutil.SloggerFrom(ctx)
+	if ab, ok := b.(backend.AuthBackend); ok {
+		mux.HandleFunc("GET /v2/", func(w http.ResponseWriter, r *http.Request) {
+			log := logutil.SloggerFrom(r.Context())
+			log.Info(r.Method + " " + r.URL.Path)
 
-	if reference == "latest" {
-		// Special handling for mapping the default image tag to the default Steamapp branch name.
-		reference = defaultBranchName
-	}
-
-	if err := digest.Digest(reference).Validate(); err == nil {
-		key := path.Join("manifests", reference)
-
-		log.Debug("checking bucket for digest reference", "key", key)
-
-		rc, err := p.Bucket.NewReader(ctx, key, nil)
-		if err != nil {
-			return err
-		}
-		defer rc.Close()
-
-		manifest := &v1.Manifest{}
-		if err = jsonDecoderStrict(rc).Decode(manifest); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func jsonDecoderStrict(r io.Reader) *json.Decoder {
-	d := json.NewDecoder(r)
-	d.DisallowUnknownFields()
-	return d
-}
-
-// muahahahaha
-func beforeWrite(getContentLength func() (int64, error)) func(func(any) bool) error {
-	return func(asFunc func(any) bool) error {
-		putObjectInput := &s3.PutObjectInput{}
-
-		if asFunc(&putObjectInput) {
-			contentLength, err := getContentLength()
+			handler, err := ab.Root(r.Context())
 			if err != nil {
-				return err
+				log.Error(err.Error())
+				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+				return
 			}
 
-			putObjectInput.ContentLength = &contentLength
-		}
+			handler.ServeHTTP(w, r)
+		})
 
-		return nil
-	}
-}
+		mux.HandleFunc("GET /v2/token", func(w http.ResponseWriter, r *http.Request) {
+			log := logutil.SloggerFrom(r.Context())
+			log.Info(r.Method + " " + r.URL.Path)
 
-func (p *PullRegistry) getManifest(ctx context.Context, name string, reference string) ([]byte, digest.Digest, string, error) {
-	log := logutil.SloggerFrom(ctx)
-
-	if reference == "latest" {
-		// Special handling for mapping the default image tag to the default Steamapp branch name.
-		reference = defaultBranchName
-	} else if dig := digest.Digest(reference); dig.Validate() == nil {
-		// If the reference is a digest instead of a Steamapp branch name, it necessarily
-		// must have been generated previously to be retrievable.
-		key := path.Join("manifests", reference)
-
-		log.Debug("checking bucket for digest reference", "key", key)
-
-		rc, err := p.Bucket.NewReader(ctx, key, nil)
-		if err != nil {
-			return nil, "", "", err
-		}
-		defer rc.Close()
-
-		var (
-			manifest = &v1.Manifest{}
-			buf      = new(bytes.Buffer)
-		)
-
-		if err = jsonDecoderStrict(io.TeeReader(rc, buf)).Decode(manifest); err != nil {
-			return nil, "", "", err
-		}
-
-		return buf.Bytes(), dig, string(manifest.MediaType), nil
-	}
-
-	container := p.Client.Steamapps().Container(name, reference)
-
-	switch p.Registry {
-	case "ghcr.io":
-		address, err := container.Publish(ctx, p.Registry)
-		if err != nil {
-			return nil, "", "", err
-		}
-	}
-
-	tmp := "TODO"
-
-	_, err := container.AsTarball().Export(ctx, tmp)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	opener := FileOpener(tmp)
-
-	defer opener.Close()
-
-	image, err := tarball.Image(opener.Open, nil)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	rawManifest, err := image.RawManifest()
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	dig := digest.FromBytes(rawManifest)
-	if err = dig.Validate(); err != nil {
-		return nil, "", "", err
-	}
-
-	eg, egctx := errgroup.WithContext(ctx)
-
-	manifest := &v1.Manifest{}
-	if err = jsonDecoderStrict(bytes.NewReader(rawManifest)).Decode(manifest); err != nil {
-		return nil, "", "", err
-	}
-
-	eg.Go(func() error {
-		key := path.Join("manifests", dig.String())
-
-		if ok, err := p.Bucket.Exists(egctx, key); ok {
-			return nil
-		} else if err != nil {
-			return err
-		}
-
-		log.Debug("cacheing manifest in bucket", "key", key)
-
-		if err := p.Bucket.WriteAll(egctx, key, rawManifest, &blob.WriterOptions{
-			ContentType: string(manifest.Config.MediaType),
-			BeforeWrite: beforeWrite(func() (int64, error) {
-				return int64(len(rawManifest)), nil
-			}),
-		}); err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	eg.Go(func() error {
-		key := path.Join("blobs", manifest.Config.Digest.String())
-
-		if ok, err := p.Bucket.Exists(egctx, key); ok {
-			return nil
-		} else if err != nil {
-			return err
-		}
-
-		log.Debug("cacheing image config blob in bucket", "key", key)
-
-		rawConfig, err := image.RawConfigFile()
-		if err != nil {
-			return err
-		}
-
-		if err := p.Bucket.WriteAll(egctx, key, rawConfig, &blob.WriterOptions{
-			ContentType: string(manifest.Config.MediaType),
-			BeforeWrite: beforeWrite(func() (int64, error) {
-				return int64(len(rawConfig)), nil
-			}),
-		}); err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	layers, err := image.Layers()
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	for _, layer := range layers {
-		eg.Go(func() error {
-			hash, err := layer.Digest()
+			handler, err := ab.Token(r.Context())
 			if err != nil {
-				return err
+				log.Error(err.Error())
+				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+				return
 			}
 
-			key := path.Join("blobs", hash.String())
+			handler.ServeHTTP(w, r)
+		})
+	} else {
+		mux.HandleFunc("GET /v2/", func(w http.ResponseWriter, r *http.Request) {
+			log := logutil.SloggerFrom(r.Context())
+			log.Info(r.Pattern)
 
-			if ok, err := p.Bucket.Exists(egctx, key); ok {
-				return nil
-			} else if err != nil {
-				return err
-			}
-
-			log.Debug("cacheing layer blob in bucket", "key", key)
-
-			rc, err := layer.Compressed()
-			if err != nil {
-				return err
-			}
-			defer rc.Close()
-
-			mediaType, err := layer.MediaType()
-			if err != nil {
-				return err
-			}
-
-			if err = p.Bucket.Upload(egctx, key, rc, &blob.WriterOptions{
-				ContentType: string(mediaType),
-				BeforeWrite: beforeWrite(layer.Size),
-			}); err != nil {
-				return err
-			}
-
-			return nil
+			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 		})
 	}
 
-	if err = eg.Wait(); err != nil {
-		return nil, "", "", err
-	}
+	mux.HandleFunc("GET /v2/{name}/manifests/{reference}", func(w http.ResponseWriter, r *http.Request) {
+		log := logutil.SloggerFrom(r.Context())
+		log.Info(r.Method + " " + r.URL.Path)
 
-	return rawManifest, dig, string(manifest.MediaType), nil
-}
+		name := r.PathValue("name")
+		reference := r.PathValue("reference")
 
-func (p *PullRegistry) headBlob(ctx context.Context, digest string) error {
-	log := logutil.SloggerFrom(ctx)
-
-	hash, err := v1.NewHash(digest)
-	if err != nil {
-		return err
-	}
-
-	key := path.Join("blobs", hash.String())
-
-	log.Debug("checking bucket for digest reference", "key", key)
-
-	if ok, err := p.Bucket.Exists(ctx, key); ok {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("blob not found: %s", digest)
-}
-
-func (p *PullRegistry) getBlob(ctx context.Context, digest string) (io.ReadCloser, string, string, error) {
-	log := logutil.SloggerFrom(ctx)
-
-	hash, err := v1.NewHash(digest)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	key := path.Join("blobs", hash.String())
-
-	log.Debug("checking bucket for digest reference", "key", key)
-
-	attr, err := p.Bucket.Attributes(ctx, key)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	if p.UseSignedURLs {
-		signedURL, err := p.Bucket.SignedURL(ctx, key, nil)
-		if err != nil {
-			return nil, "", "", err
+		d, ok := Digest(reference)
+		if !ok {
+			var err error
+			if d, err = b.Store(
+				r.Context(),
+				c.Sindri().
+					Container(name, reference),
+				c,
+				name,
+				reference,
+			); err != nil {
+				log.Error(err.Error())
+				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+				return
+			}
 		}
 
-		return nil, "", signedURL, nil
-	}
+		handler, err := b.Manifest(
+			r.Context(),
+			name, d,
+		)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+			return
+		}
 
-	rc, err := p.Bucket.NewReader(ctx, key, nil)
-	if err != nil {
-		return nil, "", "", err
-	}
+		handler.ServeHTTP(w, r)
+	})
 
-	return rc, attr.ContentType, "", nil
-}
+	mux.HandleFunc("GET /v2/{name}/blobs/{reference}", func(w http.ResponseWriter, r *http.Request) {
+		log := logutil.SloggerFrom(r.Context())
+		log.Info(r.Method + " " + r.URL.Path)
 
-const (
-	headerDockerContentDigest = "Docker-Content-Digest"
-)
+		name := r.PathValue("name")
+		d := digest.Digest(r.PathValue("reference"))
 
-func (p *PullRegistry) Handler() http.Handler {
-	return ingress.New(
-		ingress.ExactPath("/v2/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// OCI does not require this, but the Docker v2 spec include it, and GCR sets this.
-			// Docker distribution v2 clients may fallback to an older version if this is not set.
-			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
-		}), ingress.WithMatchIgnoreSlash),
-		ingress.PrefixPath("/v2",
-			xhttp.AllowHandler(
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					var (
-						split    = strings.Split(r.URL.Path, "/")
-						lenSplit = len(split)
-					)
+		handler, err := b.Blob(
+			r.Context(),
+			name, d,
+		)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+			return
+		}
 
-					if len(split) < 5 {
-						http.NotFound(w, r)
-						return
-					}
+		handler.ServeHTTP(w, r)
+	})
 
-					var (
-						ep        = split[lenSplit-2]
-						name      = strings.Join(split[2:lenSplit-2], "/")
-						reference = split[lenSplit-1]
-						log       = logutil.SloggerFrom(r.Context()).With(
-							"method", r.Method,
-							"name", name,
-							"reference", reference,
-							"request", uuid.NewString(),
-						)
-					)
+	mux.HandleFunc("GET /v2/{name}/tags/list", func(w http.ResponseWriter, r *http.Request) {
+		log := logutil.SloggerFrom(r.Context())
+		log.Info(r.Method + " " + r.URL.Path)
 
-					r = r.WithContext(logutil.SloggerInto(r.Context(), log))
-					log.Info(ep)
+		name := r.PathValue("name")
 
-					switch ep {
-					case "manifests":
-						if r.Method == http.MethodHead {
-							if err := p.headManifest(r.Context(), reference); err != nil {
-								log.Error(ep, "err", err.Error())
-								http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-								return
-							}
+		tags, err := c.Sindri().
+			Tags(r.Context(), name)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+			return
+		}
 
-							w.WriteHeader(http.StatusOK)
-							return
-						}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"name": name,
+			"tags": tags,
+		})
+	})
 
-						rawManifest, dig, mediaType, err := p.getManifest(r.Context(), name, reference)
-						if err != nil {
-							log.Error(ep, "err", err.Error())
-							http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-							return
-						}
-
-						w.Header().Set("Content-Length", fmt.Sprint(len(rawManifest)))
-						w.Header().Set("Content-Type", mediaType)
-						w.Header().Set(headerDockerContentDigest, dig.String())
-						_, _ = w.Write(rawManifest)
-						return
-					case "blobs":
-						if r.Method == http.MethodHead {
-							if err := p.headBlob(r.Context(), reference); err != nil {
-								log.Error(ep, "err", err.Error())
-								http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-								return
-							}
-
-							w.WriteHeader(http.StatusOK)
-							return
-						}
-
-						blob, mediaType, signedURL, err := p.getBlob(r.Context(), reference)
-						if err != nil {
-							log.Error(ep, "err", err.Error())
-							http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-							return
-						}
-						w.Header().Set(headerDockerContentDigest, reference)
-						if signedURL != "" {
-							log.Debug("redirecting", "signed-url", signedURL)
-							http.Redirect(w, r, signedURL, http.StatusTemporaryRedirect)
-							return
-						}
-						defer blob.Close()
-
-						w.Header().Set("Content-Type", mediaType)
-
-						_, _ = io.Copy(w, blob)
-						return
-					default:
-						http.NotFound(w, r)
-						return
-					}
-				}),
-				[]string{http.MethodGet, http.MethodHead},
-			),
-		),
-	)
+	return mux
 }
