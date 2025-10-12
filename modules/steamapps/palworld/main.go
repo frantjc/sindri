@@ -23,6 +23,7 @@ const (
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
+	home  = "/home/" + user
 )
 
 func (m *Palworld) Container(
@@ -42,27 +43,44 @@ func (m *Palworld) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := path.Join("/opt/sindri/steamapps", fmt.Sprint(appID))
+	steamappDirectoryPath := path.Join(home+"/.local/share/sindri/steamapps", fmt.Sprint(appID))
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch: branch,
 	})
+
+	steamworksSdkRedistLinuxInclude := []string{
+		"linux64/**",
+		"libsteamwebrtc.so",
+		"steamclient.so",
+	}
 
 	launch, found := getLaunch(appInfo, isLinux)
 	if !found {
 		return nil, fmt.Errorf("did not find linux launch config")
 	}
 
-	return dag.Wolfi().
-		Container(dagger.WolfiContainerOpts{
-			Packages: []string{"ca-certificates-bundle"},
-		}).
-		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
-		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
-		WithDirectory(
-			steamappDirectoryPath,
+	return dag.Layer().
+		DirectoryOntoContainer(
 			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{Owner: owner},
+			dag.Wolfi().
+				Container(dagger.WolfiContainerOpts{
+					Packages: []string{"ca-certificates-bundle"},
+				}).
+				WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+				WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}),
+			steamappDirectoryPath,
+			dagger.LayerDirectoryOntoContainerOpts{
+				Owner: owner,
+				Includes: [][]string{
+					steamworksSdkRedistLinuxInclude,
+					{"Pal/Content/**"},
+				},
+				Exclude: []string{
+					"steamapps/",
+					"steam_appid.txt",
+				},
+			},
 		).
 		WithUser(user).
 		WithWorkdir(steamappDirectoryPath).

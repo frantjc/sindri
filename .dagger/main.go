@@ -11,7 +11,7 @@ import (
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
 )
 
-type Sindri struct {
+type SindriDev struct {
 	Source *dagger.Directory
 }
 
@@ -19,8 +19,8 @@ func New(
 	// +optional
 	// +defaultPath="."
 	src *dagger.Directory,
-) *Sindri {
-	return &Sindri{
+) *SindriDev {
+	return &SindriDev{
 		Source: src,
 	}
 }
@@ -34,7 +34,7 @@ const (
 	home  = "/home/" + user
 )
 
-func (m *Sindri) Container(
+func (m *SindriDev) Container(
 	ctx context.Context,
 	// +optional
 	// +default="steamapps"
@@ -105,7 +105,7 @@ func (m *Sindri) Container(
 		WithEntrypoint([]string{"sindri"}), nil
 }
 
-func (m *Sindri) Service(
+func (m *SindriDev) Service(
 	ctx context.Context,
 	// +optional
 	// +default="localhost"
@@ -136,8 +136,8 @@ func (m *Sindri) Service(
 		}), nil
 }
 
-func (m *Sindri) Test(ctx context.Context) (*dagger.Container, error) {
-	alias := "sindri.dagger"
+func (m *SindriDev) Test(ctx context.Context) (*dagger.Container, error) {
+	alias := "sindri.dagger.local"
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
 
@@ -161,7 +161,7 @@ func (m *Sindri) Test(ctx context.Context) (*dagger.Container, error) {
 		WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
 }
 
-func (m *Sindri) Version(ctx context.Context) string {
+func (m *SindriDev) Version(ctx context.Context) string {
 	version := "0.0.0-unknown"
 
 	ref, err := m.Source.AsGit().LatestVersion().Ref(ctx)
@@ -172,7 +172,7 @@ func (m *Sindri) Version(ctx context.Context) string {
 	return version
 }
 
-func (m *Sindri) Binary(ctx context.Context) *dagger.File {
+func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 	return dag.Go(dagger.GoOpts{
 		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
 			Exclude: []string{".github/**", "e2e/**"},
@@ -184,7 +184,7 @@ func (m *Sindri) Binary(ctx context.Context) *dagger.File {
 		})
 }
 
-func (m *Sindri) Coder() *dagger.LLM {
+func (m *SindriDev) Coder() *dagger.LLM {
 	return dag.Doug().
 		Agent(
 			dag.LLM().

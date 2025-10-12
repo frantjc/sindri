@@ -23,6 +23,7 @@ const (
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
+	home  = "/home/" + user
 )
 
 func (m *Astroneer) Container(
@@ -42,43 +43,52 @@ func (m *Astroneer) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := path.Join("/opt/sindri/steamapps", fmt.Sprint(appID))
+	steamappDirectoryPath := path.Join(home+"/.local/share/sindri/steamapps", fmt.Sprint(appID))
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch:       branch,
 		PlatformType: steamcmd.PlatformTypeWindows.String(),
 	})
 
-	launch, found := getLaunch(appInfo, isWindows)
+	steamworksSdkRedistLinuxInclude := []string{
+		"linux64/**",
+		"libsteamwebrtc.so",
+		"steamclient.so",
+	}
+
+	launch, found := getLaunch(appInfo, func(launch *steamcmd.AppInfoConfigLaunch) bool {
+		return true
+	})
 	if !found {
 		return nil, fmt.Errorf("did not find windows launch config")
 	}
 
-	return dag.Debian().
-		Container(dagger.DebianContainerOpts{Packages: []string{"winehq-stable"}}).
-		WithExec([]string{"groupadd", "-r", "-g", gid, group}).
-		WithExec([]string{"useradd", "-m", "-g", group, "-u", uid, "-r", user}).
-		WithDirectory(
-			steamappDirectoryPath,
+	return dag.Layer().
+		DirectoryOntoContainer(
 			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{Owner: owner},
+			dag.Debian().
+				Container(dagger.DebianContainerOpts{Packages: []string{"winehq-stable"}}).
+				WithExec([]string{"groupadd", "-r", "-g", gid, group}).
+				WithExec([]string{"useradd", "-m", "-g", group, "-u", uid, "-r", user}),
+			steamappDirectoryPath,
+			dagger.LayerDirectoryOntoContainerOpts{
+				Owner: owner,
+				Includes: [][]string{
+					steamworksSdkRedistLinuxInclude,
+					{"Astro/Content/**"},
+				},
+				Exclude: []string{
+					"steamapps/",
+					"steam_appid.txt",
+				},
+			},
 		).
 		WithUser(user).
+		WithWorkdir(steamappDirectoryPath).
 		WithEntrypoint([]string{
 			"wine",
 			path.Join(steamappDirectoryPath, launch.Executable),
-		}).
-		WithDefaultArgs(strings.Split(launch.Arguments, " ")), nil
-}
-
-var (
-	isWindows = supportsOS("windows")
-)
-
-func supportsOS(os string) func(launch *steamcmd.AppInfoConfigLaunch) bool {
-	return func(launch *steamcmd.AppInfoConfigLaunch) bool {
-		return strings.Contains(launch.Config.OSList, os)
-	}
+		}), nil
 }
 
 func getLaunch(appInfo *steamcmd.AppInfo, f func(launch *steamcmd.AppInfoConfigLaunch) bool) (*steamcmd.AppInfoConfigLaunch, bool) {

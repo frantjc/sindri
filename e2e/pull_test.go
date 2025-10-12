@@ -33,8 +33,8 @@ func TestPull(t *testing.T) {
 		}
 	}()
 
-	for _, appID := range []int{2857200, 896660, 1963720, 2394010, 1690800} {
-		ref, err := name.ParseReference(fmt.Sprintf("%s/%d", registry, appID))
+	for _, steamapp := range []string{"valheim", "corekeeper"} {
+		ref, err := name.ParseReference(fmt.Sprintf("%s/%s", registry, steamapp))
 		if !assert.NoError(t, err) {
 			continue
 		}

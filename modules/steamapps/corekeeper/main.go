@@ -23,6 +23,7 @@ const (
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
+	home  = "/home/" + user
 )
 
 func (m *Corekeeper) Container(
@@ -42,7 +43,7 @@ func (m *Corekeeper) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := path.Join("/opt/sindri/steamapps", fmt.Sprint(appID))
+	steamappDirectoryPath := path.Join(home+"/.local/share/sindri/steamapps", fmt.Sprint(appID))
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch: branch,
@@ -52,51 +53,51 @@ func (m *Corekeeper) Container(
 
 	steamClientSoLinkPath := path.Join("/usr/lib/x86_64-linux-gnu", path.Base(steamClientSoPath))
 
-	steamworksSdkRedistLinuxPatterns := []string{
+	steamworksSdkRedistLinuxInclude := []string{
 		"linux64/**",
 		"libsteamwebrtc.so",
 		"steamclient.so",
 	}
 
-	removePatterns := []string{
-		"_readme.sh",
-		"launch.sh",
-	}
-
-	return dag.Debian().
-		Container(dagger.DebianContainerOpts{
-			Packages: []string{
-				"ca-certificates",
-				"curl",
-				"locales",
-				"libxi6",
-				"xvfb",
+	return dag.Layer().
+		DirectoryOntoContainer(
+			steamappDirectory,
+			dag.Debian().
+				Container(dagger.DebianContainerOpts{
+					Packages: []string{
+						"ca-certificates",
+						"curl",
+						"locales",
+						"libxi6",
+						"xvfb",
+					},
+				}).
+				WithExec([]string{"groupadd", "-r", "-g", gid, group}).
+				WithExec([]string{"useradd", "-m", "-g", group, "-u", uid, "-r", user}),
+			steamappDirectoryPath,
+			dagger.LayerDirectoryOntoContainerOpts{
+				Owner: owner,
+				Includes: [][]string{
+					steamworksSdkRedistLinuxInclude,
+					{"CoreKeeperServer_Data/Managed/**"},
+					{"CoreKeeperServer_Data/Plugins/**"},
+					{"CoreKeeperServer_Data/StreamingAssets/**"},
+				},
+				Exclude: []string{
+					"steamapps/",
+					"steam_appid.txt",
+					"_readme.sh",
+					"launch.sh",
+				},
 			},
-		}).
+		).
 		WithExec([]string{
 			"ln", "-s",
 			steamClientSoPath,
 			steamClientSoLinkPath,
 		}).
-		WithExec([]string{"groupadd", "-r", "-g", gid, group}).
-		WithExec([]string{"useradd", "-m", "-g", group, "-u", uid, "-r", user}).
-		WithDirectory(
-			steamappDirectoryPath,
-			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{
-				Owner: owner,
-				Include: steamworksSdkRedistLinuxPatterns,
-			},
-		).
-		WithDirectory(
-			steamappDirectoryPath,
-			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{
-				Owner: owner,
-				Exclude: append(steamworksSdkRedistLinuxPatterns, removePatterns...),
-			},
-		).
 		WithUser(user).
+		WithWorkdir(steamappDirectoryPath).
 		WithEntrypoint([]string{
 			path.Join(steamappDirectoryPath, "_launch.sh"),
 			"-logfile", "/dev/stdout",

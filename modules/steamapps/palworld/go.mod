@@ -3,7 +3,7 @@ module dagger/modules/palworld
 go 1.25.1
 
 require (
-	github.com/99designs/gqlgen v0.17.79
+	github.com/99designs/gqlgen v0.17.80
 	github.com/Khan/genqlient v0.8.1
 	github.com/frantjc/go-steamcmd v0.0.0-20250908220709-0f4416580612
 	github.com/vektah/gqlparser/v2 v2.5.30

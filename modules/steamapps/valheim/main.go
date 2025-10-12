@@ -23,6 +23,7 @@ const (
 	group = "sindri"
 	user  = group
 	owner = user + ":" + group
+	home  = "/home/" + user
 )
 
 func (m *Valheim) Container(
@@ -42,7 +43,7 @@ func (m *Valheim) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := path.Join("/opt/sindri/steamapps", fmt.Sprint(appID))
+	steamappDirectoryPath := path.Join(home+"/.local/share/sindri/steamapps", fmt.Sprint(appID))
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch: branch,
@@ -52,15 +53,10 @@ func (m *Valheim) Container(
 
 	steamClientSoLinkPath := path.Join("/usr/lib", path.Base(steamClientSoPath))
 
-	// These include patterns are used to break up steamappDirectory into multiple layers for parallelizeable pushing and pulling.
 	steamworksSdkRedistLinuxInclude := []string{
 		"linux64/**",
 		"libsteamwebrtc.so",
 		"steamclient.so",
-	}
-
-	valheimServerDataManagedInclude := []string{
-		"valheim_server_Data/Managed/**",
 	}
 
 	return dag.Layer().
@@ -77,11 +73,12 @@ func (m *Valheim) Container(
 				Owner: owner,
 				Includes: [][]string{
 					steamworksSdkRedistLinuxInclude,
-					valheimServerDataManagedInclude,
+					{"valheim_server_Data/StreamingAssets/**"},
 				},
 				Exclude: []string{
-					"docker",
-					"steamapps",
+					"docker/",
+					"steamapps/",
+					"steam_appid.txt",
 					"docker_start_server.sh",
 					"start_server_xterm.sh",
 					"start_server.sh",
