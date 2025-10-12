@@ -52,36 +52,40 @@ func (m *Valheim) Container(
 
 	steamClientSoLinkPath := path.Join("/usr/lib", path.Base(steamClientSoPath))
 
-	// These patterns are used to break up steamappDirectory into multiple layers for faster pushing and pulling.
-	steamworksSdkRedistLinuxPatterns := []string{
+	// These include patterns are used to break up steamappDirectory into multiple layers for parallelizeable pushing and pulling.
+	steamworksSdkRedistLinuxInclude := []string{
 		"linux64/**",
 		"libsteamwebrtc.so",
 		"steamclient.so",
 	}
 
-	removePatterns := []string{
-		"docker/**",
-		"docker_start_server.sh",
-		"start_server_xterm.sh",
-		"start_server.sh",
-	}
-
-	valheimServerDataManagedPatterns := []string{
+	valheimServerDataManagedInclude := []string{
 		"valheim_server_Data/Managed/**",
 	}
 
-	return dag.Wolfi().
-		Container(dagger.WolfiContainerOpts{
-			Packages: []string{"zlib"},
-		}).
-		WithExec([]string{"addgroup", "-S", "-g", gid, group}).
-		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
-		WithDirectory(
-			steamappDirectoryPath,
+	return dag.Layer().
+		DirectoryOntoContainer(
 			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{
+			dag.Wolfi().
+				Container(dagger.WolfiContainerOpts{
+					Packages: []string{"zlib"},
+				}).
+				WithExec([]string{"addgroup", "-S", "-g", gid, group}).
+				WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}),
+			steamappDirectoryPath,
+			dagger.LayerDirectoryOntoContainerOpts{
 				Owner: owner,
-				Include: steamworksSdkRedistLinuxPatterns,
+				Includes: [][]string{
+					steamworksSdkRedistLinuxInclude,
+					valheimServerDataManagedInclude,
+				},
+				Exclude: []string{
+					"docker",
+					"steamapps",
+					"docker_start_server.sh",
+					"start_server_xterm.sh",
+					"start_server.sh",
+				},
 			},
 		).
 		WithExec([]string{
@@ -89,22 +93,6 @@ func (m *Valheim) Container(
 			steamClientSoPath,
 			steamClientSoLinkPath,
 		}).
-		WithDirectory(
-			steamappDirectoryPath,
-			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{
-				Owner: owner,
-				Include: valheimServerDataManagedPatterns,
-			},
-		).
-		WithDirectory(
-			steamappDirectoryPath,
-			steamappDirectory,
-			dagger.ContainerWithDirectoryOpts{
-				Owner: owner,
-				Exclude: append(append(steamworksSdkRedistLinuxPatterns, valheimServerDataManagedPatterns...), removePatterns...),
-			},
-		).
 		WithUser(user).
 		WithWorkdir(steamappDirectoryPath).
 		WithEntrypoint([]string{path.Join(steamappDirectoryPath, "valheim_server.x86_64")}).
