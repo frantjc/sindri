@@ -11,7 +11,7 @@ import (
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
 )
 
-type Sindri struct {
+type SindriDev struct {
 	Source *dagger.Directory
 }
 
@@ -19,8 +19,8 @@ func New(
 	// +optional
 	// +defaultPath="."
 	src *dagger.Directory,
-) *Sindri {
-	return &Sindri{
+) *SindriDev {
+	return &SindriDev{
 		Source: src,
 	}
 }
@@ -34,7 +34,12 @@ const (
 	home  = "/home/" + user
 )
 
-func (m *Sindri) Container(ctx context.Context) (*dagger.Container, error) {
+func (m *SindriDev) Container(
+	ctx context.Context,
+	// +optional
+	// +default="steamapps"
+	module string,
+) (*dagger.Container, error) {
 	version, err := dag.Version(ctx)
 	if err != nil {
 		return nil, err
@@ -95,13 +100,12 @@ func (m *Sindri) Container(ctx context.Context) (*dagger.Container, error) {
 		).
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
-		WithWorkdir(home).
-		WithEnvVariable("SINDRI_MODULES_DIRECTORY", home+"/.config/sindri/modules", dagger.ContainerWithEnvVariableOpts{Expand: true}).
-		WithDirectory("$SINDRI_MODULES_DIRECTORY", m.Source.Directory("dagger/modules"), dagger.ContainerWithDirectoryOpts{Expand: true, Owner: owner}).
+		WithWorkdir(home+"/.config/sindri").
+		WithDirectory(".", m.Source.Directory("modules/"+module), dagger.ContainerWithDirectoryOpts{Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
 }
 
-func (m *Sindri) Service(
+func (m *SindriDev) Service(
 	ctx context.Context,
 	// +optional
 	// +default="localhost"
@@ -111,7 +115,7 @@ func (m *Sindri) Service(
 	crtPath := home + "/.config/sindri/tls.crt"
 	keyPath := home + "/.config/sindri/tls.key"
 
-	container, err := m.Container(ctx)
+	container, err := m.Container(ctx, "steamapps")
 	if err != nil {
 		return nil, err
 	}
@@ -127,27 +131,13 @@ func (m *Sindri) Service(
 			Args: []string{
 				"--tls-key", keyPath,
 				"--tls-crt", crtPath,
+				"--debug",
 			},
 		}), nil
 }
 
-func (m *Sindri) Generate() (*dagger.Changeset, error) {
-	return dag.Go(dagger.GoOpts{
-		Module: m.Source,
-	}).
-		Container().
-		WithExec([]string{
-			"go", "install", "sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0",
-		}).
-		WithExec([]string{
-			"controller-gen", "object", "crd", "webhook", "paths='./internal/...'", "output:crd:artifacts:config=internal/config/crd",
-		}).
-		Directory(".").
-		Changes(m.Source), nil
-}
-
-func (m *Sindri) Test(ctx context.Context) (*dagger.Container, error) {
-	alias := "sindri.dagger"
+func (m *SindriDev) Test(ctx context.Context) (*dagger.Container, error) {
+	alias := "sindri.dagger.local"
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
 
@@ -171,7 +161,7 @@ func (m *Sindri) Test(ctx context.Context) (*dagger.Container, error) {
 		WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
 }
 
-func (m *Sindri) Version(ctx context.Context) string {
+func (m *SindriDev) Version(ctx context.Context) string {
 	version := "0.0.0-unknown"
 
 	ref, err := m.Source.AsGit().LatestVersion().Ref(ctx)
@@ -182,10 +172,10 @@ func (m *Sindri) Version(ctx context.Context) string {
 	return version
 }
 
-func (m *Sindri) Binary(ctx context.Context) *dagger.File {
+func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 	return dag.Go(dagger.GoOpts{
 		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{".dagger/**", ".github/**", "dagger/modules/**", "e2e/**"},
+			Exclude: []string{".github/**", "e2e/**"},
 		}),
 	}).
 		Build(dagger.GoBuildOpts{
@@ -194,7 +184,7 @@ func (m *Sindri) Binary(ctx context.Context) *dagger.File {
 		})
 }
 
-func (m *Sindri) Coder() *dagger.LLM {
+func (m *SindriDev) Coder() *dagger.LLM {
 	return dag.Doug().
 		Agent(
 			dag.LLM().

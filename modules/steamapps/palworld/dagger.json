@@ -1,0 +1,24 @@
+{
+  "name": "palworld",
+  "engineVersion": "v0.19.0",
+  "sdk": {
+    "source": "go"
+  },
+  "dependencies": [
+    {
+      "name": "layer",
+      "source": "github.com/frantjc/daggerverse/layer@main",
+      "pin": "2bfe430bc7ba1e92244a56d7df0053857812f6ba"
+    },
+    {
+      "name": "steamcmd",
+      "source": "github.com/frantjc/daggerverse/steamcmd@main",
+      "pin": "c5b48198397c36dfe03dbdaf43b1b020ec14eb3f"
+    },
+    {
+      "name": "wolfi",
+      "source": "github.com/dagger/dagger/modules/wolfi@v0.19.0",
+      "pin": "4c0989b202a02fcee68c9f983f7f1671c6c397b8"
+    }
+  ]
+}

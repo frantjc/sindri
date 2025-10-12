@@ -1,0 +1,24 @@
+{
+  "name": "astroneer",
+  "engineVersion": "v0.19.0",
+  "sdk": {
+    "source": "go"
+  },
+  "dependencies": [
+    {
+      "name": "debian",
+      "source": "github.com/frantjc/daggerverse/debian@main",
+      "pin": "2bfe430bc7ba1e92244a56d7df0053857812f6ba"
+    },
+    {
+      "name": "layer",
+      "source": "github.com/frantjc/daggerverse/layer@main",
+      "pin": "2bfe430bc7ba1e92244a56d7df0053857812f6ba"
+    },
+    {
+      "name": "steamcmd",
+      "source": "github.com/frantjc/daggerverse/steamcmd@main",
+      "pin": "2bfe430bc7ba1e92244a56d7df0053857812f6ba"
+    }
+  ]
+}
