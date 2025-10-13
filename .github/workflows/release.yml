@@ -19,7 +19,7 @@ jobs:
           shell: |
             tag=$(version)
             steamappsContainer=$(container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
-            wolfiContainer=$(container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
+            wolfiContainer=$(container --module wolfi | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
             $steamappsContainer | publish ghcr.io/${{ github.repository }}:$tag &
             $steamappsContainer | publish ghcr.io/${{ github.repository }}:$tag-steamapps &
             $wolfiContainer | publish ghcr.io/${{ github.repository }}:$tag-wolfi &
