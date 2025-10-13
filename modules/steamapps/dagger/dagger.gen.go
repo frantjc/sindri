@@ -358,10 +358,10 @@ func (r *Abioticfactor) WithGraphQLQuery(q *querybuilder.Selection) *Abioticfact
 type AbioticfactorContainerOpts struct {
 
 	// Default: "public"
-	Branch string // abioticfactor (../../modules/steamapps/abioticfactor/main.go:32:2)
+	Branch string // abioticfactor (../../modules/steamapps/abioticfactor/main.go:33:2)
 }
 
-func (r *Abioticfactor) Container(opts ...AbioticfactorContainerOpts) *Container { // abioticfactor (../../modules/steamapps/abioticfactor/main.go:28:1)
+func (r *Abioticfactor) Container(opts ...AbioticfactorContainerOpts) *Container { // abioticfactor (../../modules/steamapps/abioticfactor/main.go:29:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `branch` optional argument
@@ -616,10 +616,10 @@ func (r *Astroneer) WithGraphQLQuery(q *querybuilder.Selection) *Astroneer {
 type AstroneerContainerOpts struct {
 
 	// Default: "public"
-	Branch string // astroneer (../../modules/steamapps/astroneer/main.go:32:2)
+	Branch string // astroneer (../../modules/steamapps/astroneer/main.go:33:2)
 }
 
-func (r *Astroneer) Container(opts ...AstroneerContainerOpts) *Container { // astroneer (../../modules/steamapps/astroneer/main.go:28:1)
+func (r *Astroneer) Container(opts ...AstroneerContainerOpts) *Container { // astroneer (../../modules/steamapps/astroneer/main.go:29:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `branch` optional argument
@@ -3148,7 +3148,7 @@ func (r *Container) Workdir(ctx context.Context) (string, error) {
 	return response, q.Execute(ctx)
 }
 
-type Corekeeper struct { // corekeeper (../../modules/steamapps/corekeeper/main.go:17:6)
+type Corekeeper struct { // corekeeper (../../modules/steamapps/corekeeper/main.go:16:6)
 	query *querybuilder.Selection
 
 	id *CorekeeperID
@@ -4135,10 +4135,10 @@ func (r *Enshrouded) WithGraphQLQuery(q *querybuilder.Selection) *Enshrouded {
 type EnshroudedContainerOpts struct {
 
 	// Default: "public"
-	Branch string // enshrouded (../../modules/steamapps/enshrouded/main.go:32:2)
+	Branch string // enshrouded (../../modules/steamapps/enshrouded/main.go:33:2)
 }
 
-func (r *Enshrouded) Container(opts ...EnshroudedContainerOpts) *Container { // enshrouded (../../modules/steamapps/enshrouded/main.go:28:1)
+func (r *Enshrouded) Container(opts ...EnshroudedContainerOpts) *Container { // enshrouded (../../modules/steamapps/enshrouded/main.go:29:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `branch` optional argument
@@ -9799,10 +9799,10 @@ func (r *Palworld) WithGraphQLQuery(q *querybuilder.Selection) *Palworld {
 type PalworldContainerOpts struct {
 
 	// Default: "public"
-	Branch string // palworld (../../modules/steamapps/palworld/main.go:32:2)
+	Branch string // palworld (../../modules/steamapps/palworld/main.go:33:2)
 }
 
-func (r *Palworld) Container(opts ...PalworldContainerOpts) *Container { // palworld (../../modules/steamapps/palworld/main.go:28:1)
+func (r *Palworld) Container(opts ...PalworldContainerOpts) *Container { // palworld (../../modules/steamapps/palworld/main.go:29:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `branch` optional argument
@@ -10040,7 +10040,7 @@ func (r *Client) Container(opts ...ContainerOpts) *Container {
 	}
 }
 
-func (r *Client) Corekeeper() *Corekeeper { // corekeeper (../../modules/steamapps/corekeeper/main.go:17:6)
+func (r *Client) Corekeeper() *Corekeeper { // corekeeper (../../modules/steamapps/corekeeper/main.go:16:6)
 	q := r.query.Select("corekeeper")
 
 	return &Corekeeper{
@@ -11062,7 +11062,7 @@ func (r *Client) SetSecret(name string, plaintext string) *Secret {
 	}
 }
 
-func (r *Client) Sindri() *Sindri { // sindri (../../modules/steamapps/main.go:16:6)
+func (r *Client) Sindri() *Sindri { // sindri (../../modules/steamapps/main.go:9:6)
 	q := r.query.Select("sindri")
 
 	return &Sindri{
@@ -11099,7 +11099,7 @@ func (r *Client) TypeDef() *TypeDef {
 	}
 }
 
-func (r *Client) Valheim() *Valheim { // valheim (../../modules/steamapps/valheim/main.go:17:6)
+func (r *Client) Valheim() *Valheim { // valheim (../../modules/steamapps/valheim/main.go:16:6)
 	q := r.query.Select("valheim")
 
 	return &Valheim{
@@ -11200,10 +11200,10 @@ func (r *Satisfactory) WithGraphQLQuery(q *querybuilder.Selection) *Satisfactory
 type SatisfactoryContainerOpts struct {
 
 	// Default: "public"
-	Branch string // satisfactory (../../modules/steamapps/satisfactory/main.go:32:2)
+	Branch string // satisfactory (../../modules/steamapps/satisfactory/main.go:33:2)
 }
 
-func (r *Satisfactory) Container(opts ...SatisfactoryContainerOpts) *Container { // satisfactory (../../modules/steamapps/satisfactory/main.go:28:1)
+func (r *Satisfactory) Container(opts ...SatisfactoryContainerOpts) *Container { // satisfactory (../../modules/steamapps/satisfactory/main.go:29:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `branch` optional argument
@@ -11942,7 +11942,7 @@ func (r *Service) WithHostname(hostname string) *Service {
 	}
 }
 
-type Sindri struct { // sindri (../../modules/steamapps/main.go:16:6)
+type Sindri struct { // sindri (../../modules/steamapps/main.go:9:6)
 	query *querybuilder.Selection
 
 	id *SindriID
@@ -11954,7 +11954,7 @@ func (r *Sindri) WithGraphQLQuery(q *querybuilder.Selection) *Sindri {
 	}
 }
 
-func (r *Sindri) Container(name string, reference string) *Container { // sindri (../../modules/steamapps/main.go:18:1)
+func (r *Sindri) Container(name string, reference string) *Container { // sindri (../../modules/steamapps/main.go:11:1)
 	q := r.query.Select("container")
 	q = q.Arg("name", name)
 	q = q.Arg("reference", reference)
@@ -12002,16 +12002,6 @@ func (r *Sindri) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return json.Marshal(id)
-}
-
-func (r *Sindri) Tags(ctx context.Context, name string) ([]string, error) { // sindri (../../modules/steamapps/main.go:65:1)
-	q := r.query.Select("tags")
-	q = q.Arg("name", name)
-
-	var response []string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
 }
 
 // A Unix or TCP/IP socket that can be mounted into a container.
@@ -12765,7 +12755,7 @@ func (r *TypeDef) WithScalar(name string, opts ...TypeDefWithScalarOpts) *TypeDe
 	}
 }
 
-type Valheim struct { // valheim (../../modules/steamapps/valheim/main.go:17:6)
+type Valheim struct { // valheim (../../modules/steamapps/valheim/main.go:16:6)
 	query *querybuilder.Selection
 
 	id *ValheimID

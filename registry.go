@@ -1,7 +1,6 @@
 package sindri
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/frantjc/sindri/backend"
@@ -111,26 +110,6 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 		}
 
 		handler.ServeHTTP(w, r)
-	})
-
-	mux.HandleFunc("GET /v2/{name}/tags/list", func(w http.ResponseWriter, r *http.Request) {
-		log := logutil.SloggerFrom(r.Context())
-		log.Info(r.Method + " " + r.URL.Path)
-
-		name := r.PathValue("name")
-
-		tags, err := c.Sindri().
-			Tags(r.Context(), name)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-			return
-		}
-
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"name": name,
-			"tags": tags,
-		})
 	})
 
 	return mux

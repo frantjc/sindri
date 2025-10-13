@@ -12,12 +12,6 @@ github.com/cenkalti/backoff/v5 v5.0.3 h1:ZN+IMa753KfX5hd8vVaMixjnqRZ3y8CuJKRKj1x
 github.com/cenkalti/backoff/v5 v5.0.3/go.mod h1:rkhZdG3JZukswDf7f0cwqPNk4K0sa+F97BxZthm/crw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/frantjc/go-encoding-vdf v0.0.0-20240928221613-2ef12628042f h1:fy+VU2KF2R4Eqr/m/lDmAv/fwAQIxCL1JEZ7Bu75+cE=
-github.com/frantjc/go-encoding-vdf v0.0.0-20240928221613-2ef12628042f/go.mod h1:zY83TMnjTQ2hUDsJINasa1N+ZyxHoIvFGYHZBl2RyN0=
-github.com/frantjc/go-steamcmd v0.0.0-20250908220709-0f4416580612 h1:D7JO7kyVbFY+4yXD4bObyHxzoYCVdvrPN1BoJqfq54Y=
-github.com/frantjc/go-steamcmd v0.0.0-20250908220709-0f4416580612/go.mod h1:kQ84pqozn8zekZQXs/KL+WH6Xek7h/7tfixZQppXXFU=
-github.com/frantjc/x v0.0.0-20250610102853-b97418de6613 h1:IX2jm3XR7pySsevrVPbne++IRsFdCK5AOxp2kjoUIok=
-github.com/frantjc/x v0.0.0-20250610102853-b97418de6613/go.mod h1:tddPtloeZsRJ+hPcZlVSgS4rbm9RIuTKfaYv8EMHDlc=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
