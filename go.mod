@@ -5,7 +5,7 @@ go 1.25.1
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.84.1
-	github.com/frantjc/steamapps v0.0.0-unknown
+	github.com/frantjc/sindri-module v0.0.0-replaced
 	github.com/frantjc/x v0.0.0-20250812130030-e7e2a3978c7c
 	github.com/go-logr/logr v1.4.3
 	github.com/google/go-containerregistry v0.20.6
@@ -21,7 +21,7 @@ require (
 	sigs.k8s.io/controller-runtime v0.22.2
 )
 
-replace github.com/frantjc/steamapps => ./modules/steamapps
+replace github.com/frantjc/sindri-module => ./modules/interface
 
 require (
 	cel.dev/expr v0.24.0 // indirect
@@ -32,7 +32,7 @@ require (
 	cloud.google.com/go/iam v1.5.2 // indirect
 	cloud.google.com/go/monitoring v1.24.2 // indirect
 	cloud.google.com/go/storage v1.55.0 // indirect
-	dagger.io/dagger v0.19.0 // indirect
+	dagger.io/dagger v0.19.2 // indirect
 	github.com/99designs/gqlgen v0.17.80 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.18.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.10.1 // indirect

@@ -14,7 +14,7 @@ import (
 	"github.com/frantjc/sindri"
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/logutil"
-	"github.com/frantjc/steamapps/dagger"
+	"github.com/frantjc/sindri-module/dagger"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )

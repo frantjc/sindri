@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	dagger "dagger/steamapps/dagger"
+	dagger "dagger/interface/dagger"
 
 	dagClient "dagger.io/dagger"
 )
@@ -48,20 +48,10 @@ func Close() error {
 	return err
 }
 
-func Abioticfactor() *dagger.Abioticfactor {
-	client := initClient()
-	return client.Abioticfactor()
-}
-
 // initialize an address to load directories, containers, secrets or other object types.
 func Address(value string) *dagger.Address {
 	client := initClient()
 	return client.Address(value)
-}
-
-func Astroneer() *dagger.Astroneer {
-	client := initClient()
-	return client.Astroneer()
 }
 
 // Constructs a cache volume for a given cache key.
@@ -82,11 +72,6 @@ func Cloud() *dagger.Cloud {
 func Container(opts ...dagger.ContainerOpts) *dagger.Container {
 	client := initClient()
 	return client.Container(opts...)
-}
-
-func Corekeeper() *dagger.Corekeeper {
-	client := initClient()
-	return client.Corekeeper()
 }
 
 // Returns the current environment
@@ -131,11 +116,6 @@ func DefaultPlatform(ctx context.Context) (dagger.Platform, error) {
 func Directory() *dagger.Directory {
 	client := initClient()
 	return client.Directory()
-}
-
-func Enshrouded() *dagger.Enshrouded {
-	client := initClient()
-	return client.Enshrouded()
 }
 
 // Initializes a new environment
@@ -208,22 +188,10 @@ func LLM(opts ...dagger.LLMOpts) *dagger.LLM {
 	return client.LLM(opts...)
 }
 
-// Load a Abioticfactor from its ID.
-func LoadAbioticfactorFromID(id dagger.AbioticfactorID) *dagger.Abioticfactor {
-	client := initClient()
-	return client.LoadAbioticfactorFromID(id)
-}
-
 // Load a Address from its ID.
 func LoadAddressFromID(id dagger.AddressID) *dagger.Address {
 	client := initClient()
 	return client.LoadAddressFromID(id)
-}
-
-// Load a Astroneer from its ID.
-func LoadAstroneerFromID(id dagger.AstroneerID) *dagger.Astroneer {
-	client := initClient()
-	return client.LoadAstroneerFromID(id)
 }
 
 // Load a Binding from its ID.
@@ -256,12 +224,6 @@ func LoadContainerFromID(id dagger.ContainerID) *dagger.Container {
 	return client.LoadContainerFromID(id)
 }
 
-// Load a Corekeeper from its ID.
-func LoadCorekeeperFromID(id dagger.CorekeeperID) *dagger.Corekeeper {
-	client := initClient()
-	return client.LoadCorekeeperFromID(id)
-}
-
 // Load a CurrentModule from its ID.
 func LoadCurrentModuleFromID(id dagger.CurrentModuleID) *dagger.CurrentModule {
 	client := initClient()
@@ -272,12 +234,6 @@ func LoadCurrentModuleFromID(id dagger.CurrentModuleID) *dagger.CurrentModule {
 func LoadDirectoryFromID(id dagger.DirectoryID) *dagger.Directory {
 	client := initClient()
 	return client.LoadDirectoryFromID(id)
-}
-
-// Load a Enshrouded from its ID.
-func LoadEnshroudedFromID(id dagger.EnshroudedID) *dagger.Enshrouded {
-	client := initClient()
-	return client.LoadEnshroudedFromID(id)
 }
 
 // Load a EnumTypeDef from its ID.
@@ -448,12 +404,6 @@ func LoadObjectTypeDefFromID(id dagger.ObjectTypeDefID) *dagger.ObjectTypeDef {
 	return client.LoadObjectTypeDefFromID(id)
 }
 
-// Load a Palworld from its ID.
-func LoadPalworldFromID(id dagger.PalworldID) *dagger.Palworld {
-	client := initClient()
-	return client.LoadPalworldFromID(id)
-}
-
 // Load a Port from its ID.
 func LoadPortFromID(id dagger.PortID) *dagger.Port {
 	client := initClient()
@@ -464,12 +414,6 @@ func LoadPortFromID(id dagger.PortID) *dagger.Port {
 func LoadSDKConfigFromID(id dagger.SDKConfigID) *dagger.SDKConfig {
 	client := initClient()
 	return client.LoadSDKConfigFromID(id)
-}
-
-// Load a Satisfactory from its ID.
-func LoadSatisfactoryFromID(id dagger.SatisfactoryID) *dagger.Satisfactory {
-	client := initClient()
-	return client.LoadSatisfactoryFromID(id)
 }
 
 // Load a ScalarTypeDef from its ID.
@@ -520,12 +464,6 @@ func LoadSourceMapFromID(id dagger.SourceMapID) *dagger.SourceMap {
 	return client.LoadSourceMapFromID(id)
 }
 
-// Load a Steamcmd from its ID.
-func LoadSteamcmdFromID(id dagger.SteamcmdID) *dagger.Steamcmd {
-	client := initClient()
-	return client.LoadSteamcmdFromID(id)
-}
-
 // Load a Terminal from its ID.
 func LoadTerminalFromID(id dagger.TerminalID) *dagger.Terminal {
 	client := initClient()
@@ -538,12 +476,6 @@ func LoadTypeDefFromID(id dagger.TypeDefID) *dagger.TypeDef {
 	return client.LoadTypeDefFromID(id)
 }
 
-// Load a Valheim from its ID.
-func LoadValheimFromID(id dagger.ValheimID) *dagger.Valheim {
-	client := initClient()
-	return client.LoadValheimFromID(id)
-}
-
 // Create a new module.
 func Module() *dagger.Module {
 	client := initClient()
@@ -554,16 +486,6 @@ func Module() *dagger.Module {
 func ModuleSource(refString string, opts ...dagger.ModuleSourceOpts) *dagger.ModuleSource {
 	client := initClient()
 	return client.ModuleSource(refString, opts...)
-}
-
-func Palworld() *dagger.Palworld {
-	client := initClient()
-	return client.Palworld()
-}
-
-func Satisfactory() *dagger.Satisfactory {
-	client := initClient()
-	return client.Satisfactory()
 }
 
 // Creates a new secret.
@@ -591,20 +513,10 @@ func SourceMap(filename string, line int, column int) *dagger.SourceMap {
 	return client.SourceMap(filename, line, column)
 }
 
-func Steamcmd() *dagger.Steamcmd {
-	client := initClient()
-	return client.Steamcmd()
-}
-
 // Create a new TypeDef.
 func TypeDef() *dagger.TypeDef {
 	client := initClient()
 	return client.TypeDef()
-}
-
-func Valheim() *dagger.Valheim {
-	client := initClient()
-	return client.Valheim()
 }
 
 // Get the current Dagger Engine version.

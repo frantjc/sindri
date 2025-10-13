@@ -17,7 +17,7 @@ import (
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
-	"github.com/frantjc/steamapps/dagger"
+	"github.com/frantjc/sindri-module/dagger"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/uuid"

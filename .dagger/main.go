@@ -110,12 +110,15 @@ func (m *SindriDev) Service(
 	// +optional
 	// +default="localhost"
 	hostname string,
+	// +optional
+	// +default="steamapps"
+	module string,
 ) (*dagger.Service, error) {
 	keyPair := dag.TLS().Ca().KeyPair(hostname)
 	crtPath := home + "/.config/sindri/tls.crt"
 	keyPath := home + "/.config/sindri/tls.key"
 
-	container, err := m.Container(ctx, "steamapps")
+	container, err := m.Container(ctx, module)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +144,7 @@ func (m *SindriDev) Test(ctx context.Context) (*dagger.Container, error) {
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
 
-	svc, err := m.Service(ctx, alias)
+	svc, err := m.Service(ctx, alias, "steamapps")
 	if err != nil {
 		return nil, err
 	}

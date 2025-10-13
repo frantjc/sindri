@@ -15,7 +15,7 @@ import (
 	"github.com/frantjc/sindri/backend/registry"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
-	"github.com/frantjc/steamapps/dagger"
+	"github.com/frantjc/sindri-module/dagger"
 	"github.com/opencontainers/go-digest"
 )
 

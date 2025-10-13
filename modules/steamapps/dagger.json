@@ -38,11 +38,5 @@
       "name": "valheim",
       "source": "valheim"
     }
-  ],
-  "clients": [
-    {
-      "generator": "go",
-      "directory": "./dagger"
-    }
   ]
 }

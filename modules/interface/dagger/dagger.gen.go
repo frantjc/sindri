@@ -131,14 +131,8 @@ func (e *ExecError) Unwrap() error {
 	return e.original
 }
 
-// The `AbioticfactorID` scalar type represents an identifier for an object of type Abioticfactor.
-type AbioticfactorID string
-
 // The `AddressID` scalar type represents an identifier for an object of type Address.
 type AddressID string
-
-// The `AstroneerID` scalar type represents an identifier for an object of type Astroneer.
-type AstroneerID string
 
 // The `BindingID` scalar type represents an identifier for an object of type Binding.
 type BindingID string
@@ -155,17 +149,11 @@ type CloudID string
 // The `ContainerID` scalar type represents an identifier for an object of type Container.
 type ContainerID string
 
-// The `CorekeeperID` scalar type represents an identifier for an object of type Corekeeper.
-type CorekeeperID string
-
 // The `CurrentModuleID` scalar type represents an identifier for an object of type CurrentModule.
 type CurrentModuleID string
 
 // The `DirectoryID` scalar type represents an identifier for an object of type Directory.
 type DirectoryID string
-
-// The `EnshroudedID` scalar type represents an identifier for an object of type Enshrouded.
-type EnshroudedID string
 
 // The `EnumTypeDefID` scalar type represents an identifier for an object of type EnumTypeDef.
 type EnumTypeDefID string
@@ -254,9 +242,6 @@ type ModuleSourceID string
 // The `ObjectTypeDefID` scalar type represents an identifier for an object of type ObjectTypeDef.
 type ObjectTypeDefID string
 
-// The `PalworldID` scalar type represents an identifier for an object of type Palworld.
-type PalworldID string
-
 // The platform config OS and architecture in a Container.
 //
 // The format is [os]/[platform]/[version] (e.g., "darwin/arm64/v7", "windows/amd64", "linux/arm64").
@@ -267,9 +252,6 @@ type PortID string
 
 // The `SDKConfigID` scalar type represents an identifier for an object of type SDKConfig.
 type SDKConfigID string
-
-// The `SatisfactoryID` scalar type represents an identifier for an object of type Satisfactory.
-type SatisfactoryID string
 
 // The `ScalarTypeDefID` scalar type represents an identifier for an object of type ScalarTypeDef.
 type ScalarTypeDefID string
@@ -295,17 +277,11 @@ type SocketID string
 // The `SourceMapID` scalar type represents an identifier for an object of type SourceMap.
 type SourceMapID string
 
-// The `SteamcmdID` scalar type represents an identifier for an object of type Steamcmd.
-type SteamcmdID string
-
 // The `TerminalID` scalar type represents an identifier for an object of type Terminal.
 type TerminalID string
 
 // The `TypeDefID` scalar type represents an identifier for an object of type TypeDef.
 type TypeDefID string
-
-// The `ValheimID` scalar type represents an identifier for an object of type Valheim.
-type ValheimID string
 
 // The absence of a value.
 //
@@ -340,79 +316,6 @@ type PortForward struct {
 
 	// Transport layer protocol to use for traffic.
 	Protocol NetworkProtocol `json:"protocol,omitempty"`
-}
-
-type Abioticfactor struct { // abioticfactor (../../modules/steamapps/abioticfactor/main.go:17:6)
-	query *querybuilder.Selection
-
-	id *AbioticfactorID
-}
-
-func (r *Abioticfactor) WithGraphQLQuery(q *querybuilder.Selection) *Abioticfactor {
-	return &Abioticfactor{
-		query: q,
-	}
-}
-
-// AbioticfactorContainerOpts contains options for Abioticfactor.Container
-type AbioticfactorContainerOpts struct {
-
-	// Default: "public"
-	Branch string // abioticfactor (../../modules/steamapps/abioticfactor/main.go:33:2)
-}
-
-func (r *Abioticfactor) Container(opts ...AbioticfactorContainerOpts) *Container { // abioticfactor (../../modules/steamapps/abioticfactor/main.go:29:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Abioticfactor.
-func (r *Abioticfactor) ID(ctx context.Context) (AbioticfactorID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response AbioticfactorID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Abioticfactor) XXX_GraphQLType() string {
-	return "Abioticfactor"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Abioticfactor) XXX_GraphQLIDType() string {
-	return "AbioticfactorID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Abioticfactor) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Abioticfactor) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
 }
 
 // A standardized address to load containers, directories, secrets, and other object types. Address format depends on the type, and is validated at type selection.
@@ -600,79 +503,6 @@ func (r *Address) Value(ctx context.Context) (string, error) {
 	return response, q.Execute(ctx)
 }
 
-type Astroneer struct { // astroneer (../../modules/steamapps/astroneer/main.go:17:6)
-	query *querybuilder.Selection
-
-	id *AstroneerID
-}
-
-func (r *Astroneer) WithGraphQLQuery(q *querybuilder.Selection) *Astroneer {
-	return &Astroneer{
-		query: q,
-	}
-}
-
-// AstroneerContainerOpts contains options for Astroneer.Container
-type AstroneerContainerOpts struct {
-
-	// Default: "public"
-	Branch string // astroneer (../../modules/steamapps/astroneer/main.go:33:2)
-}
-
-func (r *Astroneer) Container(opts ...AstroneerContainerOpts) *Container { // astroneer (../../modules/steamapps/astroneer/main.go:29:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Astroneer.
-func (r *Astroneer) ID(ctx context.Context) (AstroneerID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response AstroneerID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Astroneer) XXX_GraphQLType() string {
-	return "Astroneer"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Astroneer) XXX_GraphQLIDType() string {
-	return "AstroneerID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Astroneer) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Astroneer) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
-}
-
 type Binding struct {
 	query *querybuilder.Selection
 
@@ -690,29 +520,11 @@ func (r *Binding) WithGraphQLQuery(q *querybuilder.Selection) *Binding {
 	}
 }
 
-// Retrieve the binding value, as type Abioticfactor
-func (r *Binding) AsAbioticfactor() *Abioticfactor {
-	q := r.query.Select("asAbioticfactor")
-
-	return &Abioticfactor{
-		query: q,
-	}
-}
-
 // Retrieve the binding value, as type Address
 func (r *Binding) AsAddress() *Address {
 	q := r.query.Select("asAddress")
 
 	return &Address{
-		query: q,
-	}
-}
-
-// Retrieve the binding value, as type Astroneer
-func (r *Binding) AsAstroneer() *Astroneer {
-	q := r.query.Select("asAstroneer")
-
-	return &Astroneer{
 		query: q,
 	}
 }
@@ -753,29 +565,11 @@ func (r *Binding) AsContainer() *Container {
 	}
 }
 
-// Retrieve the binding value, as type Corekeeper
-func (r *Binding) AsCorekeeper() *Corekeeper {
-	q := r.query.Select("asCorekeeper")
-
-	return &Corekeeper{
-		query: q,
-	}
-}
-
 // Retrieve the binding value, as type Directory
 func (r *Binding) AsDirectory() *Directory {
 	q := r.query.Select("asDirectory")
 
 	return &Directory{
-		query: q,
-	}
-}
-
-// Retrieve the binding value, as type Enshrouded
-func (r *Binding) AsEnshrouded() *Enshrouded {
-	q := r.query.Select("asEnshrouded")
-
-	return &Enshrouded{
 		query: q,
 	}
 }
@@ -861,24 +655,6 @@ func (r *Binding) AsModuleSource() *ModuleSource {
 	}
 }
 
-// Retrieve the binding value, as type Palworld
-func (r *Binding) AsPalworld() *Palworld {
-	q := r.query.Select("asPalworld")
-
-	return &Palworld{
-		query: q,
-	}
-}
-
-// Retrieve the binding value, as type Satisfactory
-func (r *Binding) AsSatisfactory() *Satisfactory {
-	q := r.query.Select("asSatisfactory")
-
-	return &Satisfactory{
-		query: q,
-	}
-}
-
 // Retrieve the binding value, as type SearchResult
 func (r *Binding) AsSearchResult() *SearchResult {
 	q := r.query.Select("asSearchResult")
@@ -933,15 +709,6 @@ func (r *Binding) AsSocket() *Socket {
 	}
 }
 
-// Retrieve the binding value, as type Steamcmd
-func (r *Binding) AsSteamcmd() *Steamcmd {
-	q := r.query.Select("asSteamcmd")
-
-	return &Steamcmd{
-		query: q,
-	}
-}
-
 // Returns the binding's string value
 func (r *Binding) AsString(ctx context.Context) (string, error) {
 	if r.asString != nil {
@@ -953,15 +720,6 @@ func (r *Binding) AsString(ctx context.Context) (string, error) {
 
 	q = q.Bind(&response)
 	return response, q.Execute(ctx)
-}
-
-// Retrieve the binding value, as type Valheim
-func (r *Binding) AsValheim() *Valheim {
-	q := r.query.Select("asValheim")
-
-	return &Valheim{
-		query: q,
-	}
 }
 
 // Returns the digest of the binding value
@@ -3148,79 +2906,6 @@ func (r *Container) Workdir(ctx context.Context) (string, error) {
 	return response, q.Execute(ctx)
 }
 
-type Corekeeper struct { // corekeeper (../../modules/steamapps/corekeeper/main.go:16:6)
-	query *querybuilder.Selection
-
-	id *CorekeeperID
-}
-
-func (r *Corekeeper) WithGraphQLQuery(q *querybuilder.Selection) *Corekeeper {
-	return &Corekeeper{
-		query: q,
-	}
-}
-
-// CorekeeperContainerOpts contains options for Corekeeper.Container
-type CorekeeperContainerOpts struct {
-
-	// Default: "public"
-	Branch string // corekeeper (../../modules/steamapps/corekeeper/main.go:32:2)
-}
-
-func (r *Corekeeper) Container(opts ...CorekeeperContainerOpts) *Container { // corekeeper (../../modules/steamapps/corekeeper/main.go:28:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Corekeeper.
-func (r *Corekeeper) ID(ctx context.Context) (CorekeeperID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response CorekeeperID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Corekeeper) XXX_GraphQLType() string {
-	return "Corekeeper"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Corekeeper) XXX_GraphQLIDType() string {
-	return "CorekeeperID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Corekeeper) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Corekeeper) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
-}
-
 // Reflective module API provided to functions at runtime.
 type CurrentModule struct {
 	query *querybuilder.Selection
@@ -4119,79 +3804,6 @@ func (r *Directory) WithoutFiles(paths []string) *Directory {
 	}
 }
 
-type Enshrouded struct { // enshrouded (../../modules/steamapps/enshrouded/main.go:17:6)
-	query *querybuilder.Selection
-
-	id *EnshroudedID
-}
-
-func (r *Enshrouded) WithGraphQLQuery(q *querybuilder.Selection) *Enshrouded {
-	return &Enshrouded{
-		query: q,
-	}
-}
-
-// EnshroudedContainerOpts contains options for Enshrouded.Container
-type EnshroudedContainerOpts struct {
-
-	// Default: "public"
-	Branch string // enshrouded (../../modules/steamapps/enshrouded/main.go:33:2)
-}
-
-func (r *Enshrouded) Container(opts ...EnshroudedContainerOpts) *Container { // enshrouded (../../modules/steamapps/enshrouded/main.go:29:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Enshrouded.
-func (r *Enshrouded) ID(ctx context.Context) (EnshroudedID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response EnshroudedID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Enshrouded) XXX_GraphQLType() string {
-	return "Enshrouded"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Enshrouded) XXX_GraphQLIDType() string {
-	return "EnshroudedID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Enshrouded) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Enshrouded) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
-}
-
 // A definition of a custom enum defined in a Module.
 type EnumTypeDef struct {
 	query *querybuilder.Selection
@@ -4612,30 +4224,6 @@ func (r *Env) Outputs(ctx context.Context) ([]Binding, error) {
 	return convert(response), nil
 }
 
-// Create or update a binding of type Abioticfactor in the environment
-func (r *Env) WithAbioticfactorInput(name string, value *Abioticfactor, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withAbioticfactorInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Abioticfactor output to be assigned in the environment
-func (r *Env) WithAbioticfactorOutput(name string, description string) *Env {
-	q := r.query.Select("withAbioticfactorOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
 // Create or update a binding of type Address in the environment
 func (r *Env) WithAddressInput(name string, value *Address, description string) *Env {
 	assertNotNil("value", value)
@@ -4652,30 +4240,6 @@ func (r *Env) WithAddressInput(name string, value *Address, description string) 
 // Declare a desired Address output to be assigned in the environment
 func (r *Env) WithAddressOutput(name string, description string) *Env {
 	q := r.query.Select("withAddressOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Create or update a binding of type Astroneer in the environment
-func (r *Env) WithAstroneerInput(name string, value *Astroneer, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withAstroneerInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Astroneer output to be assigned in the environment
-func (r *Env) WithAstroneerOutput(name string, description string) *Env {
-	q := r.query.Select("withAstroneerOutput")
 	q = q.Arg("name", name)
 	q = q.Arg("description", description)
 
@@ -4780,30 +4344,6 @@ func (r *Env) WithContainerOutput(name string, description string) *Env {
 	}
 }
 
-// Create or update a binding of type Corekeeper in the environment
-func (r *Env) WithCorekeeperInput(name string, value *Corekeeper, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withCorekeeperInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Corekeeper output to be assigned in the environment
-func (r *Env) WithCorekeeperOutput(name string, description string) *Env {
-	q := r.query.Select("withCorekeeperOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
 // Installs the current module into the environment, exposing its functions to the model
 //
 // Contextual path arguments will be populated using the environment's workspace.
@@ -4831,30 +4371,6 @@ func (r *Env) WithDirectoryInput(name string, value *Directory, description stri
 // Declare a desired Directory output to be assigned in the environment
 func (r *Env) WithDirectoryOutput(name string, description string) *Env {
 	q := r.query.Select("withDirectoryOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Create or update a binding of type Enshrouded in the environment
-func (r *Env) WithEnshroudedInput(name string, value *Enshrouded, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withEnshroudedInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Enshrouded output to be assigned in the environment
-func (r *Env) WithEnshroudedOutput(name string, description string) *Env {
-	q := r.query.Select("withEnshroudedOutput")
 	q = q.Arg("name", name)
 	q = q.Arg("description", description)
 
@@ -5092,54 +4608,6 @@ func (r *Env) WithModuleSourceOutput(name string, description string) *Env {
 	}
 }
 
-// Create or update a binding of type Palworld in the environment
-func (r *Env) WithPalworldInput(name string, value *Palworld, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withPalworldInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Palworld output to be assigned in the environment
-func (r *Env) WithPalworldOutput(name string, description string) *Env {
-	q := r.query.Select("withPalworldOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Create or update a binding of type Satisfactory in the environment
-func (r *Env) WithSatisfactoryInput(name string, value *Satisfactory, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withSatisfactoryInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Satisfactory output to be assigned in the environment
-func (r *Env) WithSatisfactoryOutput(name string, description string) *Env {
-	q := r.query.Select("withSatisfactoryOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
 // Create or update a binding of type SearchResult in the environment
 func (r *Env) WithSearchResultInput(name string, value *SearchResult, description string) *Env {
 	assertNotNil("value", value)
@@ -5284,30 +4752,6 @@ func (r *Env) WithSocketOutput(name string, description string) *Env {
 	}
 }
 
-// Create or update a binding of type Steamcmd in the environment
-func (r *Env) WithSteamcmdInput(name string, value *Steamcmd, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withSteamcmdInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Steamcmd output to be assigned in the environment
-func (r *Env) WithSteamcmdOutput(name string, description string) *Env {
-	q := r.query.Select("withSteamcmdOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
 // Provides a string input binding to the environment
 func (r *Env) WithStringInput(name string, value string, description string) *Env {
 	q := r.query.Select("withStringInput")
@@ -5323,30 +4767,6 @@ func (r *Env) WithStringInput(name string, value string, description string) *En
 // Declares a desired string output binding
 func (r *Env) WithStringOutput(name string, description string) *Env {
 	q := r.query.Select("withStringOutput")
-	q = q.Arg("name", name)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Create or update a binding of type Valheim in the environment
-func (r *Env) WithValheimInput(name string, value *Valheim, description string) *Env {
-	assertNotNil("value", value)
-	q := r.query.Select("withValheimInput")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-	q = q.Arg("description", description)
-
-	return &Env{
-		query: q,
-	}
-}
-
-// Declare a desired Valheim output to be assigned in the environment
-func (r *Env) WithValheimOutput(name string, description string) *Env {
-	q := r.query.Select("withValheimOutput")
 	q = q.Arg("name", name)
 	q = q.Arg("description", description)
 
@@ -9783,79 +9203,6 @@ func (r *ObjectTypeDef) SourceModuleName(ctx context.Context) (string, error) {
 	return response, q.Execute(ctx)
 }
 
-type Palworld struct { // palworld (../../modules/steamapps/palworld/main.go:17:6)
-	query *querybuilder.Selection
-
-	id *PalworldID
-}
-
-func (r *Palworld) WithGraphQLQuery(q *querybuilder.Selection) *Palworld {
-	return &Palworld{
-		query: q,
-	}
-}
-
-// PalworldContainerOpts contains options for Palworld.Container
-type PalworldContainerOpts struct {
-
-	// Default: "public"
-	Branch string // palworld (../../modules/steamapps/palworld/main.go:33:2)
-}
-
-func (r *Palworld) Container(opts ...PalworldContainerOpts) *Container { // palworld (../../modules/steamapps/palworld/main.go:29:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Palworld.
-func (r *Palworld) ID(ctx context.Context) (PalworldID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response PalworldID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Palworld) XXX_GraphQLType() string {
-	return "Palworld"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Palworld) XXX_GraphQLIDType() string {
-	return "PalworldID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Palworld) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Palworld) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
-}
-
 // A port exposed by a container.
 type Port struct {
 	query *querybuilder.Selection
@@ -9972,28 +9319,12 @@ func (r *Client) WithGraphQLQuery(q *querybuilder.Selection) *Client {
 	}
 }
 
-func (r *Client) Abioticfactor() *Abioticfactor { // abioticfactor (../../modules/steamapps/abioticfactor/main.go:17:6)
-	q := r.query.Select("abioticfactor")
-
-	return &Abioticfactor{
-		query: q,
-	}
-}
-
 // initialize an address to load directories, containers, secrets or other object types.
 func (r *Client) Address(value string) *Address {
 	q := r.query.Select("address")
 	q = q.Arg("value", value)
 
 	return &Address{
-		query: q,
-	}
-}
-
-func (r *Client) Astroneer() *Astroneer { // astroneer (../../modules/steamapps/astroneer/main.go:17:6)
-	q := r.query.Select("astroneer")
-
-	return &Astroneer{
 		query: q,
 	}
 }
@@ -10036,14 +9367,6 @@ func (r *Client) Container(opts ...ContainerOpts) *Container {
 	}
 
 	return &Container{
-		query: q,
-	}
-}
-
-func (r *Client) Corekeeper() *Corekeeper { // corekeeper (../../modules/steamapps/corekeeper/main.go:16:6)
-	q := r.query.Select("corekeeper")
-
-	return &Corekeeper{
 		query: q,
 	}
 }
@@ -10131,14 +9454,6 @@ func (r *Client) Directory() *Directory {
 	q := r.query.Select("directory")
 
 	return &Directory{
-		query: q,
-	}
-}
-
-func (r *Client) Enshrouded() *Enshrouded { // enshrouded (../../modules/steamapps/enshrouded/main.go:17:6)
-	q := r.query.Select("enshrouded")
-
-	return &Enshrouded{
 		query: q,
 	}
 }
@@ -10398,32 +9713,12 @@ func (r *Client) LLM(opts ...LLMOpts) *LLM {
 	}
 }
 
-// Load a Abioticfactor from its ID.
-func (r *Client) LoadAbioticfactorFromID(id AbioticfactorID) *Abioticfactor {
-	q := r.query.Select("loadAbioticfactorFromID")
-	q = q.Arg("id", id)
-
-	return &Abioticfactor{
-		query: q,
-	}
-}
-
 // Load a Address from its ID.
 func (r *Client) LoadAddressFromID(id AddressID) *Address {
 	q := r.query.Select("loadAddressFromID")
 	q = q.Arg("id", id)
 
 	return &Address{
-		query: q,
-	}
-}
-
-// Load a Astroneer from its ID.
-func (r *Client) LoadAstroneerFromID(id AstroneerID) *Astroneer {
-	q := r.query.Select("loadAstroneerFromID")
-	q = q.Arg("id", id)
-
-	return &Astroneer{
 		query: q,
 	}
 }
@@ -10478,16 +9773,6 @@ func (r *Client) LoadContainerFromID(id ContainerID) *Container {
 	}
 }
 
-// Load a Corekeeper from its ID.
-func (r *Client) LoadCorekeeperFromID(id CorekeeperID) *Corekeeper {
-	q := r.query.Select("loadCorekeeperFromID")
-	q = q.Arg("id", id)
-
-	return &Corekeeper{
-		query: q,
-	}
-}
-
 // Load a CurrentModule from its ID.
 func (r *Client) LoadCurrentModuleFromID(id CurrentModuleID) *CurrentModule {
 	q := r.query.Select("loadCurrentModuleFromID")
@@ -10504,16 +9789,6 @@ func (r *Client) LoadDirectoryFromID(id DirectoryID) *Directory {
 	q = q.Arg("id", id)
 
 	return &Directory{
-		query: q,
-	}
-}
-
-// Load a Enshrouded from its ID.
-func (r *Client) LoadEnshroudedFromID(id EnshroudedID) *Enshrouded {
-	q := r.query.Select("loadEnshroudedFromID")
-	q = q.Arg("id", id)
-
-	return &Enshrouded{
 		query: q,
 	}
 }
@@ -10798,16 +10073,6 @@ func (r *Client) LoadObjectTypeDefFromID(id ObjectTypeDefID) *ObjectTypeDef {
 	}
 }
 
-// Load a Palworld from its ID.
-func (r *Client) LoadPalworldFromID(id PalworldID) *Palworld {
-	q := r.query.Select("loadPalworldFromID")
-	q = q.Arg("id", id)
-
-	return &Palworld{
-		query: q,
-	}
-}
-
 // Load a Port from its ID.
 func (r *Client) LoadPortFromID(id PortID) *Port {
 	q := r.query.Select("loadPortFromID")
@@ -10824,16 +10089,6 @@ func (r *Client) LoadSDKConfigFromID(id SDKConfigID) *SDKConfig {
 	q = q.Arg("id", id)
 
 	return &SDKConfig{
-		query: q,
-	}
-}
-
-// Load a Satisfactory from its ID.
-func (r *Client) LoadSatisfactoryFromID(id SatisfactoryID) *Satisfactory {
-	q := r.query.Select("loadSatisfactoryFromID")
-	q = q.Arg("id", id)
-
-	return &Satisfactory{
 		query: q,
 	}
 }
@@ -10918,16 +10173,6 @@ func (r *Client) LoadSourceMapFromID(id SourceMapID) *SourceMap {
 	}
 }
 
-// Load a Steamcmd from its ID.
-func (r *Client) LoadSteamcmdFromID(id SteamcmdID) *Steamcmd {
-	q := r.query.Select("loadSteamcmdFromID")
-	q = q.Arg("id", id)
-
-	return &Steamcmd{
-		query: q,
-	}
-}
-
 // Load a Terminal from its ID.
 func (r *Client) LoadTerminalFromID(id TerminalID) *Terminal {
 	q := r.query.Select("loadTerminalFromID")
@@ -10944,16 +10189,6 @@ func (r *Client) LoadTypeDefFromID(id TypeDefID) *TypeDef {
 	q = q.Arg("id", id)
 
 	return &TypeDef{
-		query: q,
-	}
-}
-
-// Load a Valheim from its ID.
-func (r *Client) LoadValheimFromID(id ValheimID) *Valheim {
-	q := r.query.Select("loadValheimFromID")
-	q = q.Arg("id", id)
-
-	return &Valheim{
 		query: q,
 	}
 }
@@ -11007,22 +10242,6 @@ func (r *Client) ModuleSource(refString string, opts ...ModuleSourceOpts) *Modul
 	}
 }
 
-func (r *Client) Palworld() *Palworld { // palworld (../../modules/steamapps/palworld/main.go:17:6)
-	q := r.query.Select("palworld")
-
-	return &Palworld{
-		query: q,
-	}
-}
-
-func (r *Client) Satisfactory() *Satisfactory { // satisfactory (../../modules/steamapps/satisfactory/main.go:17:6)
-	q := r.query.Select("satisfactory")
-
-	return &Satisfactory{
-		query: q,
-	}
-}
-
 // SecretOpts contains options for Client.Secret
 type SecretOpts struct {
 	// If set, the given string will be used as the cache key for this secret. This means that any secrets with the same cache key will be considered equivalent in terms of cache lookups, even if they have different URIs or plaintext values.
@@ -11062,7 +10281,7 @@ func (r *Client) SetSecret(name string, plaintext string) *Secret {
 	}
 }
 
-func (r *Client) Sindri() *Sindri { // sindri (../../modules/steamapps/main.go:9:6)
+func (r *Client) Sindri() *Sindri { // sindri (../../modules/interface/main.go:9:6)
 	q := r.query.Select("sindri")
 
 	return &Sindri{
@@ -11082,27 +10301,11 @@ func (r *Client) SourceMap(filename string, line int, column int) *SourceMap {
 	}
 }
 
-func (r *Client) Steamcmd() *Steamcmd { // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L18)
-	q := r.query.Select("steamcmd")
-
-	return &Steamcmd{
-		query: q,
-	}
-}
-
 // Create a new TypeDef.
 func (r *Client) TypeDef() *TypeDef {
 	q := r.query.Select("typeDef")
 
 	return &TypeDef{
-		query: q,
-	}
-}
-
-func (r *Client) Valheim() *Valheim { // valheim (../../modules/steamapps/valheim/main.go:16:6)
-	q := r.query.Select("valheim")
-
-	return &Valheim{
 		query: q,
 	}
 }
@@ -11182,79 +10385,6 @@ func (r *SDKConfig) Source(ctx context.Context) (string, error) {
 
 	q = q.Bind(&response)
 	return response, q.Execute(ctx)
-}
-
-type Satisfactory struct { // satisfactory (../../modules/steamapps/satisfactory/main.go:17:6)
-	query *querybuilder.Selection
-
-	id *SatisfactoryID
-}
-
-func (r *Satisfactory) WithGraphQLQuery(q *querybuilder.Selection) *Satisfactory {
-	return &Satisfactory{
-		query: q,
-	}
-}
-
-// SatisfactoryContainerOpts contains options for Satisfactory.Container
-type SatisfactoryContainerOpts struct {
-
-	// Default: "public"
-	Branch string // satisfactory (../../modules/steamapps/satisfactory/main.go:33:2)
-}
-
-func (r *Satisfactory) Container(opts ...SatisfactoryContainerOpts) *Container { // satisfactory (../../modules/steamapps/satisfactory/main.go:29:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Satisfactory.
-func (r *Satisfactory) ID(ctx context.Context) (SatisfactoryID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response SatisfactoryID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Satisfactory) XXX_GraphQLType() string {
-	return "Satisfactory"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Satisfactory) XXX_GraphQLIDType() string {
-	return "SatisfactoryID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Satisfactory) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Satisfactory) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
 }
 
 // A definition of a custom scalar defined in a Module.
@@ -11942,7 +11072,7 @@ func (r *Service) WithHostname(hostname string) *Service {
 	}
 }
 
-type Sindri struct { // sindri (../../modules/steamapps/main.go:9:6)
+type Sindri struct { // sindri (../../modules/interface/main.go:9:6)
 	query *querybuilder.Selection
 
 	id *SindriID
@@ -11954,7 +11084,7 @@ func (r *Sindri) WithGraphQLQuery(q *querybuilder.Selection) *Sindri {
 	}
 }
 
-func (r *Sindri) Container(name string, reference string) *Container { // sindri (../../modules/steamapps/main.go:11:1)
+func (r *Sindri) Container(name string, reference string) *Container { // sindri (../../modules/interface/main.go:11:1)
 	q := r.query.Select("container")
 	q = q.Arg("name", name)
 	q = q.Arg("reference", reference)
@@ -12178,115 +11308,6 @@ func (r *SourceMap) URL(ctx context.Context) (string, error) {
 
 	q = q.Bind(&response)
 	return response, q.Execute(ctx)
-}
-
-type Steamcmd struct { // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L18)
-	query *querybuilder.Selection
-
-	appInfoPrint *string
-	id           *SteamcmdID
-}
-
-func (r *Steamcmd) WithGraphQLQuery(q *querybuilder.Selection) *Steamcmd {
-	return &Steamcmd{
-		query: q,
-	}
-}
-
-func (r *Steamcmd) AppInfoPrint(ctx context.Context, appId int) (string, error) { // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L25)
-	if r.appInfoPrint != nil {
-		return *r.appInfoPrint, nil
-	}
-	q := r.query.Select("appInfoPrint")
-	q = q.Arg("appId", appId)
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// SteamcmdAppUpdateOpts contains options for Steamcmd.AppUpdate
-type SteamcmdAppUpdateOpts struct {
-
-	// Default: "linux"
-	Branch string // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L74)
-
-	BetaPassword string // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L76)
-
-	PlatformType string // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L78)
-}
-
-// TODO(frantjc): Split this up into multiple layers using depots (only when auth is passed: depots required auth).
-func (r *Steamcmd) AppUpdate(appId int, opts ...SteamcmdAppUpdateOpts) *Directory { // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L69)
-	q := r.query.Select("appUpdate")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-		// `betaPassword` optional argument
-		if !querybuilder.IsZeroValue(opts[i].BetaPassword) {
-			q = q.Arg("betaPassword", opts[i].BetaPassword)
-		}
-		// `platformType` optional argument
-		if !querybuilder.IsZeroValue(opts[i].PlatformType) {
-			q = q.Arg("platformType", opts[i].PlatformType)
-		}
-	}
-	q = q.Arg("appId", appId)
-
-	return &Directory{
-		query: q,
-	}
-}
-
-func (r *Steamcmd) Container() *Container { // steamcmd (https://github.com/frantjc/daggerverse/tree/3b2c2895770bd4baf3940c0a06dab546e83061d3/steamcmd/main.go#L20)
-	q := r.query.Select("container")
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Steamcmd.
-func (r *Steamcmd) ID(ctx context.Context) (SteamcmdID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response SteamcmdID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Steamcmd) XXX_GraphQLType() string {
-	return "Steamcmd"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Steamcmd) XXX_GraphQLIDType() string {
-	return "SteamcmdID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Steamcmd) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Steamcmd) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
 }
 
 // An interactive terminal that clients can connect to.
@@ -12753,79 +11774,6 @@ func (r *TypeDef) WithScalar(name string, opts ...TypeDefWithScalarOpts) *TypeDe
 	return &TypeDef{
 		query: q,
 	}
-}
-
-type Valheim struct { // valheim (../../modules/steamapps/valheim/main.go:16:6)
-	query *querybuilder.Selection
-
-	id *ValheimID
-}
-
-func (r *Valheim) WithGraphQLQuery(q *querybuilder.Selection) *Valheim {
-	return &Valheim{
-		query: q,
-	}
-}
-
-// ValheimContainerOpts contains options for Valheim.Container
-type ValheimContainerOpts struct {
-
-	// Default: "public"
-	Branch string // valheim (../../modules/steamapps/valheim/main.go:32:2)
-}
-
-func (r *Valheim) Container(opts ...ValheimContainerOpts) *Container { // valheim (../../modules/steamapps/valheim/main.go:28:1)
-	q := r.query.Select("container")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `branch` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Branch) {
-			q = q.Arg("branch", opts[i].Branch)
-		}
-	}
-
-	return &Container{
-		query: q,
-	}
-}
-
-// A unique identifier for this Valheim.
-func (r *Valheim) ID(ctx context.Context) (ValheimID, error) {
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.query.Select("id")
-
-	var response ValheimID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Valheim) XXX_GraphQLType() string {
-	return "Valheim"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Valheim) XXX_GraphQLIDType() string {
-	return "ValheimID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Valheim) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *Valheim) MarshalJSON() ([]byte, error) {
-	id, err := r.ID(marshalCtx)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(id)
 }
 
 // Sharing mode of the cache volume.
@@ -13494,23 +12442,10 @@ func (c *Client) Close() error {
 // Local dependencies are served by the dagger.json.
 // Remote dependencies are generated by the client generator.
 func serveModuleDependencies(ctx context.Context, client *Client) error {
-	if err := client.ModuleSource(
-		"github.com/frantjc/daggerverse/steamcmd@main",
-		ModuleSourceOpts{RefPin: "3b2c2895770bd4baf3940c0a06dab546e83061d3"},
-	).
-		WithName("steamcmd").
-		AsModule().
-		Serve(ctx); err != nil {
-		return err
-	}
-
 	modSrc := client.ModuleSource(".")
 	configExist, err := modSrc.ConfigExists(ctx)
 	if err != nil {
 		return err
-	}
-	if !configExist {
-		return fmt.Errorf("dagger.json not found but is required to load local dependencies or the module itself")
 	}
 
 	if configExist {
