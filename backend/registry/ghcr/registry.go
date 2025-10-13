@@ -30,12 +30,12 @@ func init() {
 			repository := strings.TrimPrefix(u.Path, "/")
 
 			if strings.Count(repository, "/") < 1 {
-				return nil, fmt.Errorf("repository must be of the format org/repo")
+				return nil, fmt.Errorf("path must be of the format org/repo")
 			}
 
 			return &Registry{
 				Repository: repository,
-				Username:   cmp.Or(u.User.Username(), os.Getenv("GITHUB_ACTION")),
+				Username:   cmp.Or(u.User.Username(), os.Getenv("GITHUB_ACTOR")),
 				Password:   cmp.Or(password, os.Getenv("GITHUB_TOKEN")),
 			}, nil
 		}),
@@ -76,8 +76,7 @@ func (r *Registry) Store(ctx context.Context, container *dagger.Container, clien
 	return digest.Digest(d), nil
 }
 
-// Manifest implements backend.Backend.
-func (b *Registry) Manifest(_ context.Context, name string, reference digest.Digest) (http.Handler, error) {
+func (b *Registry) proxy(name, api string, reference digest.Digest) (http.Handler, error) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		u, err := url.Parse(fmt.Sprintf("https://%s/v2", Host))
 		if err != nil {
@@ -85,15 +84,16 @@ func (b *Registry) Manifest(_ context.Context, name string, reference digest.Dig
 			return
 		}
 
-		req, err := http.NewRequestWithContext(r.Context(), r.Method, u.JoinPath(b.Repository, name, "manifests", reference.String()).String(), nil)
+		req, err := http.NewRequestWithContext(r.Context(), r.Method, u.JoinPath(b.Repository, name, api, reference.String()).String(), nil)
 		if err != nil {
 			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
 			return
 		}
+		req.Header = r.Header.Clone()
 
 		w.Header().Set("X-Redirected", req.URL.String())
 
-		res, err := http.DefaultClient.Transport.RoundTrip(req)
+		res, err := http.DefaultTransport.RoundTrip(req)
 		if err != nil {
 			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
 			return
@@ -106,44 +106,20 @@ func (b *Registry) Manifest(_ context.Context, name string, reference digest.Dig
 			}
 		}
 
+		// Hopefully this is a redirect so we don't have to proxy massive blobs.
 		w.WriteHeader(res.StatusCode)
 		_, _ = io.Copy(w, res.Body)
 	}), nil
 }
 
+// Manifest implements backend.Backend.
+func (b *Registry) Manifest(_ context.Context, name string, reference digest.Digest) (http.Handler, error) {
+	return b.proxy(name, "manifests", reference)
+}
+
 // Blob implements backend.Backend.
 func (b *Registry) Blob(_ context.Context, name string, reference digest.Digest) (http.Handler, error) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		u, err := url.Parse(fmt.Sprintf("https://%s/v2", Host))
-		if err != nil {
-			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-			return
-		}
-
-		req, err := http.NewRequestWithContext(r.Context(), r.Method, u.JoinPath(b.Repository, name, "blobs", reference.String()).String(), nil)
-		if err != nil {
-			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-			return
-		}
-
-		w.Header().Set("X-Redirected", req.URL.String())
-
-		res, err := http.DefaultClient.Transport.RoundTrip(req)
-		if err != nil {
-			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-			return
-		}
-		defer res.Body.Close()
-
-		for k, v := range res.Header {
-			for _, vv := range v {
-				w.Header().Add(k, vv)
-			}
-		}
-
-		w.WriteHeader(res.StatusCode)
-		_, _ = io.Copy(w, res.Body)
-	}), nil
+	return b.proxy(name, "blobs", reference)
 }
 
 // Root implements backend.AuthBackend.
@@ -195,8 +171,12 @@ func (b *Registry) Token(context.Context) (http.Handler, error) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log := logutil.SloggerFrom(r.Context())
 		q := r.URL.Query()
-		q.Set("scope", "repository:"+b.Repository+":pull")
-		log.Debug(q.Get("scope"))
+		// NB: The incoming scope is "repository:<name>:pull". We specifically do not
+		// append <name> to b.Repository here in case b.Repository/<name> doesn't exist,
+		// which causes GitHub to 403 us. Surprisingly, this works.
+		scope := "repository:" + b.Repository + ":pull"
+		log.Debug("scope", "before", q.Get("scope"), "after", scope)
+		q.Set("scope", scope)
 
 		req, err := http.NewRequestWithContext(r.Context(), r.Method, fmt.Sprintf("https://%s/token?%s", Host, q.Encode()), nil)
 		if err != nil {

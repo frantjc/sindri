@@ -100,7 +100,7 @@ func (m *SindriDev) Container(
 		).
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
-		WithWorkdir(home+"/.config/sindri").
+		WithWorkdir(home+"/.config/sindri/module").
 		WithDirectory(".", m.Source.Directory("modules/"+module), dagger.ContainerWithDirectoryOpts{Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
 }
@@ -195,7 +195,6 @@ func (m *SindriDev) Coder() *dagger.LLM {
 							Exclude: []string{".dagger/**", ".github/**"},
 						})),
 				).
-				WithBlockedFunction("Sindri", "binary").
 				WithBlockedFunction("Sindri", "container").
 				WithBlockedFunction("Sindri", "service").
 				WithBlockedFunction("Sindri", "version").

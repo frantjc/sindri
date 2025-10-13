@@ -43,7 +43,7 @@ func (m *Astroneer) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := path.Join(home+"/.local/share/sindri/steamapps", fmt.Sprint(appID))
+	steamappDirectoryPath := home+"/.local/share/sindri/steamapp"
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch:       branch,
