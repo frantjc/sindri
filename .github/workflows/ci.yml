@@ -15,4 +15,6 @@ jobs:
         with:
           module: github.com/${{ github.repository }}@${{ github.sha }}
           shell: |
-            test | combinedOutput
+            test | combinedOutput &
+            test --module wolfi --repository go-1.25 --repository ca-certificates | combinedOutput &
+            .wait

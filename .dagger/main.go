@@ -139,12 +139,23 @@ func (m *SindriDev) Service(
 		}), nil
 }
 
-func (m *SindriDev) Test(ctx context.Context) (*dagger.Container, error) {
+func (m *SindriDev) Test(
+	ctx context.Context,
+	// +optional
+	// +default="steamapps"
+	module string,
+	// +optional
+	// +default=[
+	// "valheim",
+	// "corekeeper"
+	// ]
+	repository []string,
+) (*dagger.Container, error) {
 	alias := "sindri.dagger.local"
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
 
-	svc, err := m.Service(ctx, alias, "steamapps")
+	svc, err := m.Service(ctx, alias, module)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +171,7 @@ func (m *SindriDev) Test(ctx context.Context) (*dagger.Container, error) {
 			"sh", "-c", fmt.Sprintf(`cat "%s" >> "/etc/ssl/certs/ca-certificates.crt"`, caCrtPath),
 		}).
 		WithEnvVariable("SINDRI_TEST_REGISTRY", hostname).
+		WithEnvVariable("SINDRI_TEST_REPOSITORIES", strings.Join(repository, ",")).
 		WithServiceBinding(alias, svc).
 		WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
 }

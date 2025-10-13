@@ -2,9 +2,10 @@ package e2e_test
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -15,6 +16,7 @@ import (
 
 var (
 	registry = os.Getenv("SINDRI_TEST_REGISTRY")
+	repositories = strings.Split(os.Getenv("SINDRI_TEST_REPOSITORIES"), ",")
 )
 
 func TestPull(t *testing.T) {
@@ -33,8 +35,8 @@ func TestPull(t *testing.T) {
 		}
 	}()
 
-	for _, steamapp := range []string{"valheim", "corekeeper"} {
-		ref, err := name.ParseReference(fmt.Sprintf("%s/%s", registry, steamapp))
+	for _, repository := range repositories {
+		ref, err := name.ParseReference(path.Join(registry, repository))
 		if !assert.NoError(t, err) {
 			continue
 		}
