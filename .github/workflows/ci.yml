@@ -13,7 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: dagger/dagger-for-github@v8.2.0
+        env:
+          DAGGER_NO_NAG: 1
         with:
           shell: |
             test --repository corekeeper | combinedOutput
-            test --module wolfi --repository go-1.25 --repository zlib/go-1.25 | combinedOutput
+            test --module wolfi --repository zlib/go-1.25 | combinedOutput
