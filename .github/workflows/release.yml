@@ -11,11 +11,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
       - uses: dagger/dagger-for-github@v8.2.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          module: github.com/${{ github.repository }}@${{ github.sha }}
           shell: |
             tag=$(version)
             steamappsContainer=$(container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
