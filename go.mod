@@ -18,7 +18,7 @@ require (
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b
 	golang.org/x/sync v0.17.0
 	k8s.io/apimachinery v0.34.1
-	sigs.k8s.io/controller-runtime v0.22.2
+	sigs.k8s.io/controller-runtime v0.22.3
 )
 
 replace github.com/frantjc/sindri-module => ./modules/interface
