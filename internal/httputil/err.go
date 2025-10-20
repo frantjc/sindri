@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"gocloud.dev/gcerrors"
 )
 
 func NewHTTPStatusCodeError(err error, httpStatusCode int) error {
@@ -45,10 +45,19 @@ func HTTPStatusCode(err error) int {
 		return hscerr.httpStatusCode
 	}
 
-	if apiStatus, ok := err.(apierrors.APIStatus); ok || errors.As(err, &apiStatus) {
-		if code := int(apiStatus.Status().Code); code != 0 {
-			return code
-		}
+	switch gcerrors.Code(err) {
+	case gcerrors.NotFound:
+		return http.StatusNotFound
+	case gcerrors.AlreadyExists:
+		return http.StatusConflict
+  case gcerrors.InvalidArgument:
+		return http.StatusBadRequest
+	case gcerrors.FailedPrecondition:
+		return http.StatusPreconditionFailed
+	case gcerrors.PermissionDenied:
+		return http.StatusForbidden
+	case gcerrors.ResourceExhausted:
+		return http.StatusInsufficientStorage
 	}
 
 	return http.StatusInternalServerError

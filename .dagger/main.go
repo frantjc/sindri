@@ -101,7 +101,7 @@ func (m *SindriDev) Container(
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
 		WithWorkdir(home+"/.config/sindri/module").
-		WithDirectory(".", m.Source.Directory("modules/"+module), dagger.ContainerWithDirectoryOpts{Owner: owner}).
+		WithDirectory(".", m.Source.Directory(path.Join("modules", module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
 }
 

@@ -44,7 +44,7 @@ func RegisterBackend(opener BackendOpener, scheme string, schemes ...string) {
 
 	for _, s := range append(schemes, scheme) {
 		if _, overwriting := backendMux[scheme]; overwriting {
-			panic("attempt to re-register storage scheme: " + s)
+			panic("attempt to re-register backend scheme: " + s)
 		}
 
 		backendMux[s] = opener

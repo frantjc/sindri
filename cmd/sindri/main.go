@@ -16,12 +16,9 @@ import (
 )
 
 func main() {
-	var (
-		ctx, stop = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		cmd       = command.SetCommon(command.NewSindri(), SemVer())
-	)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	err := xerrors.Ignore(cmd.ExecuteContext(ctx), context.Canceled)
+	err := xerrors.Ignore(command.NewSindri(SemVer()).ExecuteContext(ctx), context.Canceled)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}

@@ -19,3 +19,4 @@ jobs:
           shell: |
             test --repository corekeeper | combinedOutput
             test --module wolfi --repository zlib/go-1.25 | combinedOutput
+            test --module git --repository github.com/frantjc/sindri/testdata | combinedOutput

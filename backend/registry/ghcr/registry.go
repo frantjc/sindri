@@ -62,7 +62,10 @@ func (r *Registry) Store(ctx context.Context, container *dagger.Container, clien
 			client.SetSecret("github-token", r.Password),
 		).
 		Publish(ctx,
-			path.Join(Host, r.Repository, name)+":"+reference,
+			fmt.Sprintf("%s:%s",
+				path.Join(Host, r.Repository, name),
+				reference,
+			),
 		)
 	if err != nil {
 		return "", err
