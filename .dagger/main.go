@@ -199,7 +199,16 @@ func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 		})
 }
 
-func (m *SindriDev) Coder() *dagger.LLM {
+func (m *SindriDev) Coder(ctx context.Context) (*dagger.LLM, error) {
+	gopls := dag.Go(dagger.GoOpts{Module: m.Source}).
+		Container().
+		WithExec([]string{"go", "install", "golang.org/x/tools/gopls@latest"})
+
+	instructions, err := gopls.WithExec([]string{"gopls", "mcp", "-instructions"}).Stdout(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return dag.Doug().
 		Agent(
 			dag.LLM().
@@ -213,15 +222,12 @@ func (m *SindriDev) Coder() *dagger.LLM {
 				WithBlockedFunction("Sindri", "container").
 				WithBlockedFunction("Sindri", "service").
 				WithBlockedFunction("Sindri", "version").
+				WithSystemPrompt(instructions).
 				WithMCPServer(
-					"lsp",
-					dag.Go(dagger.GoOpts{Module: m.Source}).
-						Container().
-						WithExec([]string{"go", "install", "golang.org/x/tools/gopls@latest"}).
-						WithExec([]string{"go", "install", "github.com/isaacphi/mcp-language-server@latest"}).
-						AsService(dagger.ContainerAsServiceOpts{
-							Args: []string{"mcp-language-server", "--workspace", ".", "--lsp", "gopls"},
-						}),
+					"gopls",
+					gopls.AsService(dagger.ContainerAsServiceOpts{
+						Args: []string{"gopls", "mcp"},
+					}),
 				),
-		)
+		), nil
 }

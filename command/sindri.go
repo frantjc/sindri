@@ -26,16 +26,16 @@ var (
 
 func NewSindri(version string) *cobra.Command {
 	var (
-		address  string
-		storage  string
-		certFile string
-		keyFile  string
+		address    string
+		storage    string
+		certFile   string
+		keyFile    string
 		slogConfig = new(logutil.SlogConfig)
-		cmd      = &cobra.Command{
-			Use: "sindri",
-			Version: version,
+		cmd        = &cobra.Command{
+			Use:           "sindri",
+			Version:       version,
 			SilenceErrors: true,
-			SilenceUsage: true,
+			SilenceUsage:  true,
 			PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 				handler := slog.NewTextHandler(cmd.OutOrStdout(), &slog.HandlerOptions{
 					Level: slogConfig,

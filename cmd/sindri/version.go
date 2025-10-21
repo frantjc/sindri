@@ -9,8 +9,8 @@ var (
 	version = ""
 )
 
-// SemVer returns the semantic version of `boiler` as
-// built from GoReleaser ldflags and debug build info.
+// SemVer returns the semantic version of `sindri` as
+// built from ldflags and debug build info.
 func SemVer() string {
 	semver := version
 

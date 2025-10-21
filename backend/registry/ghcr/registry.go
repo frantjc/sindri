@@ -11,11 +11,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/frantjc/sindri-module/dagger"
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/backend/registry"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
-	"github.com/frantjc/sindri-module/dagger"
 	"github.com/opencontainers/go-digest"
 )
 

@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	registry = os.Getenv("SINDRI_TEST_REGISTRY")
+	registry     = os.Getenv("SINDRI_TEST_REGISTRY")
 	repositories = strings.Split(os.Getenv("SINDRI_TEST_REPOSITORIES"), ",")
 )
 

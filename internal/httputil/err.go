@@ -50,7 +50,7 @@ func HTTPStatusCode(err error) int {
 		return http.StatusNotFound
 	case gcerrors.AlreadyExists:
 		return http.StatusConflict
-  case gcerrors.InvalidArgument:
+	case gcerrors.InvalidArgument:
 		return http.StatusBadRequest
 	case gcerrors.FailedPrecondition:
 		return http.StatusPreconditionFailed

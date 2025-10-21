@@ -4,7 +4,7 @@ Sindri is read-only container registry for pulling images that are built on-dema
 
 ## modules
 
-Any Dagger module "sindri" that exposes a function `container` which takes two strings as arguments [`name` for the `<name>` and `reference` for the `<reference>`](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests) and returns a `Container` is supported--just run `sindri` from the module's directory. See [interface](modules/interface/main.go) for a minimal example, and the rest of the [modules](modules) for some cool use-cases. Following is a list of example uses of Sindri's builtin modules.
+Any Dagger module "sindri" that exposes a function "container" which takes two strings as arguments ["name" for the `<name>` and "reference" for the `<reference>`](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests) and returns a Dagger container is supported--just run `sindri` from the module's directory. See [interface](modules/interface/main.go) for a minimal example, and the rest of the [modules](modules) for some cool use-cases. Following is a list of example uses of Sindri's builtin modules.
 
 ### steamapps
 
@@ -66,9 +66,9 @@ docker pull --tls-verify=false localhost:5000/<name>:<reference>
 
 Sindri supports multiple storage backends for cacheing and serving container image manifests and blobs after they are exported from Dagger. All backends can be used via a [gocloud.dev URL](https://gocloud.dev/concepts/urls/).
 
-### [`gocloud.dev/blob.Bucket`](https://gocloud.dev/howto/blob/)
+### [gocloud.dev/blob.Bucket](https://gocloud.dev/howto/blob/)
 
-> An additional query parameter is supported by Sindri for opening buckets, `use_signed_urls=true`. Use this to avoid proxying container image content through Sindri for buckets that support it. This feature should reduce cost and improve performance.
+> An additional query parameter is supported by Sindri for opening buckets: `use_signed_urls=true`. Use this to avoid proxying container image content through Sindri for buckets that support it. This feature should reduce cost and improve performance.
 
 Run Sindri using an s3 bucket as its storage backend:
 
@@ -92,7 +92,7 @@ Run Sindri using ghcr.io as its storage backend:
 docker run --env GITHUB_TOKEN=ghp_xxx --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug --backend registry://ghcr.io/<org>/<repo>
 ```
 
-> ghcr.io creates new container packages as private, and it has to be manually changed to public as of writing. This will cause the first pull of any `<name>` from Sindri using ghcr.io as its storage backend to fail.
+> ghcr.io creates new container packages as private which must be manually changed to public as of writing. This will cause the first pull of any `<name>` from Sindri using ghcr.io as its storage backend to fail.
 
 #### thx
 
