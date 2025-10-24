@@ -18,9 +18,9 @@ jobs:
         with:
           shell: |
             tag=$(version)
-            steamappsContainer=$(container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
-            wolfiContainer=$(container --module wolfi | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
-            gitContainer=$(container --module git | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
+            steamappsContainer=$(sindri-dev --module steamapps | container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
+            wolfiContainer=$(sindri-dev --module wolfi | container withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
+            gitContainer=$(sindri-dev --module git | container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
             $steamappsContainer | publish ghcr.io/${{ github.repository }} &
             $steamappsContainer | publish ghcr.io/${{ github.repository }}:$tag &
             $steamappsContainer | publish ghcr.io/${{ github.repository }}:steamapps &

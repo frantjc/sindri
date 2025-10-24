@@ -1,6 +1,6 @@
 {
   "name": "sindri",
-  "engineVersion": "v0.19.0",
+  "engineVersion": "v0.19.3",
   "sdk": {
     "source": "go"
   },
@@ -32,7 +32,7 @@
     {
       "name": "steamcmd",
       "source": "github.com/frantjc/daggerverse/steamcmd@main",
-      "pin": "3b2c2895770bd4baf3940c0a06dab546e83061d3"
+      "pin": "45772d1592aeabf5feee0ef93055ae197ee60c20"
     },
     {
       "name": "valheim",

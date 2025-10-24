@@ -871,9 +871,10 @@ func (r *CacheVolume) MarshalJSON() ([]byte, error) {
 type Changeset struct {
 	query *querybuilder.Selection
 
-	export *string
-	id     *ChangesetID
-	sync   *ChangesetID
+	export  *string
+	id      *ChangesetID
+	isEmpty *bool
+	sync    *ChangesetID
 }
 
 func (r *Changeset) WithGraphQLQuery(q *querybuilder.Selection) *Changeset {
@@ -971,6 +972,19 @@ func (r *Changeset) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return json.Marshal(id)
+}
+
+// Returns true if the changeset is empty (i.e. there are no changes).
+func (r *Changeset) IsEmpty(ctx context.Context) (bool, error) {
+	if r.isEmpty != nil {
+		return *r.isEmpty, nil
+	}
+	q := r.query.Select("isEmpty")
+
+	var response bool
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx)
 }
 
 // Return a snapshot containing only the created and modified files
@@ -2063,6 +2077,16 @@ func (r *Container) WithEnvVariable(name string, value string, opts ...Container
 	}
 	q = q.Arg("name", name)
 	q = q.Arg("value", value)
+
+	return &Container{
+		query: q,
+	}
+}
+
+// Raise an error.
+func (r *Container) WithError(err string) *Container {
+	q := r.query.Select("withError")
+	q = q.Arg("err", err)
 
 	return &Container{
 		query: q,
@@ -3622,6 +3646,16 @@ func (r *Directory) WithDirectory(path string, source *Directory, opts ...Direct
 	}
 }
 
+// Raise an error.
+func (r *Directory) WithError(err string) *Directory {
+	q := r.query.Select("withError")
+	q = q.Arg("err", err)
+
+	return &Directory{
+		query: q,
+	}
+}
+
 // DirectoryWithFileOpts contains options for Directory.WithFile
 type DirectoryWithFileOpts struct {
 	// Permission given to the copied file (e.g., 0600).
@@ -4913,6 +4947,16 @@ func (r *EnvFile) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return json.Marshal(id)
+}
+
+// Filters variables by prefix and removes the pref from keys. Variables without the prefix are excluded. For example, with the prefix "MY_APP_" and variables: MY_APP_TOKEN=topsecret MY_APP_NAME=hello FOO=bar the resulting environment will contain: TOKEN=topsecret NAME=hello
+func (r *EnvFile) Namespace(prefix string) *EnvFile {
+	q := r.query.Select("namespace")
+	q = q.Arg("prefix", prefix)
+
+	return &EnvFile{
+		query: q,
+	}
 }
 
 // EnvFileVariablesOpts contains options for EnvFile.Variables
@@ -8202,6 +8246,19 @@ func (r *Module) Interfaces(ctx context.Context) ([]TypeDef, error) {
 	return convert(response), nil
 }
 
+// The introspection schema JSON file for this module.
+//
+// This file represents the schema visible to the module's source code, including all core types and those from the dependencies.
+//
+// Note: this is in the context of a module, so some core types may be hidden.
+func (r *Module) IntrospectionSchemaJSON() *File {
+	q := r.query.Select("introspectionSchemaJSON")
+
+	return &File{
+		query: q,
+	}
+}
+
 // The name of the module
 func (r *Module) Name(ctx context.Context) (string, error) {
 	if r.name != nil {
@@ -8310,6 +8367,15 @@ func (r *Module) Sync(ctx context.Context) (*Module, error) {
 	return &Module{
 		query: q.Root().Select("loadModuleFromID").Arg("id", id),
 	}, nil
+}
+
+// User-defined default values, loaded from local .env files.
+func (r *Module) UserDefaults() *EnvFile {
+	q := r.query.Select("userDefaults")
+
+	return &EnvFile{
+		query: q,
+	}
 }
 
 // Retrieves the module with the given description
@@ -8732,6 +8798,19 @@ func (r *ModuleSource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(id)
 }
 
+// The introspection schema JSON file for this module source.
+//
+// This file represents the schema visible to the module's source code, including all core types and those from the dependencies.
+//
+// Note: this is in the context of a module, so some core types may be hidden.
+func (r *ModuleSource) IntrospectionSchemaJSON() *File {
+	q := r.query.Select("introspectionSchemaJSON")
+
+	return &File{
+		query: q,
+	}
+}
+
 // The kind of module source (currently local, git or dir).
 func (r *ModuleSource) Kind(ctx context.Context) (ModuleSourceKind, error) {
 	if r.kind != nil {
@@ -8871,6 +8950,15 @@ func (r *ModuleSource) Sync(ctx context.Context) (*ModuleSource, error) {
 	}, nil
 }
 
+// User-defined defaults read from local .env files
+func (r *ModuleSource) UserDefaults() *EnvFile {
+	q := r.query.Select("userDefaults")
+
+	return &EnvFile{
+		query: q,
+	}
+}
+
 // The specified version of the git repo this source points to.
 func (r *ModuleSource) Version(ctx context.Context) (string, error) {
 	if r.version != nil {
@@ -8920,6 +9008,16 @@ func (r *ModuleSource) WithDependencies(dependencies []*ModuleSource) *ModuleSou
 func (r *ModuleSource) WithEngineVersion(version string) *ModuleSource {
 	q := r.query.Select("withEngineVersion")
 	q = q.Arg("version", version)
+
+	return &ModuleSource{
+		query: q,
+	}
+}
+
+// Enable the experimental features for the module source.
+func (r *ModuleSource) WithExperimentalFeatures(features []ModuleSourceExperimentalFeature) *ModuleSource {
+	q := r.query.Select("withExperimentalFeatures")
+	q = q.Arg("features", features)
 
 	return &ModuleSource{
 		query: q,
@@ -9018,6 +9116,16 @@ func (r *ModuleSource) WithoutClient(path string) *ModuleSource {
 func (r *ModuleSource) WithoutDependencies(dependencies []string) *ModuleSource {
 	q := r.query.Select("withoutDependencies")
 	q = q.Arg("dependencies", dependencies)
+
+	return &ModuleSource{
+		query: q,
+	}
+}
+
+// Disable experimental features for the module source.
+func (r *ModuleSource) WithoutExperimentalFeatures(features []ModuleSourceExperimentalFeature) *ModuleSource {
+	q := r.query.Select("withoutExperimentalFeatures")
+	q = q.Arg("features", features)
 
 	return &ModuleSource{
 		query: q,
@@ -10281,7 +10389,7 @@ func (r *Client) SetSecret(name string, plaintext string) *Secret {
 	}
 }
 
-func (r *Client) Sindri() *Sindri { // sindri (../../modules/interface/main.go:9:6)
+func (r *Client) Sindri() *Sindri { // sindri (../../modules/interface/main.go:15:6)
 	q := r.query.Select("sindri")
 
 	return &Sindri{
@@ -11072,7 +11180,7 @@ func (r *Service) WithHostname(hostname string) *Service {
 	}
 }
 
-type Sindri struct { // sindri (../../modules/interface/main.go:9:6)
+type Sindri struct { // sindri (../../modules/interface/main.go:15:6)
 	query *querybuilder.Selection
 
 	id *SindriID
@@ -11084,7 +11192,7 @@ func (r *Sindri) WithGraphQLQuery(q *querybuilder.Selection) *Sindri {
 	}
 }
 
-func (r *Sindri) Container(name string, reference string) *Container { // sindri (../../modules/interface/main.go:11:1)
+func (r *Sindri) Container(name string, reference string) *Container { // sindri (../../modules/interface/main.go:17:1)
 	q := r.query.Select("container")
 	q = q.Arg("name", name)
 	q = q.Arg("reference", reference)
@@ -12033,6 +12141,56 @@ const (
 
 	ImageMediaTypesDockerMediaTypes ImageMediaTypes = "DockerMediaTypes"
 	ImageMediaTypesDocker           ImageMediaTypes = ImageMediaTypesDockerMediaTypes
+)
+
+// Experimental features of a module
+type ModuleSourceExperimentalFeature string
+
+func (ModuleSourceExperimentalFeature) IsEnum() {}
+
+func (v ModuleSourceExperimentalFeature) Name() string {
+	switch v {
+	case ModuleSourceExperimentalFeatureSelfCalls:
+		return "SELF_CALLS"
+	default:
+		return ""
+	}
+}
+
+func (v ModuleSourceExperimentalFeature) Value() string {
+	return string(v)
+}
+
+func (v *ModuleSourceExperimentalFeature) MarshalJSON() ([]byte, error) {
+	if *v == "" {
+		return []byte(`""`), nil
+	}
+	name := v.Name()
+	if name == "" {
+		return nil, fmt.Errorf("invalid enum value %q", *v)
+	}
+	return json.Marshal(name)
+}
+
+func (v *ModuleSourceExperimentalFeature) UnmarshalJSON(dt []byte) error {
+	var s string
+	if err := json.Unmarshal(dt, &s); err != nil {
+		return err
+	}
+	switch s {
+	case "":
+		*v = ""
+	case "SELF_CALLS":
+		*v = ModuleSourceExperimentalFeatureSelfCalls
+	default:
+		return fmt.Errorf("invalid enum value %q", s)
+	}
+	return nil
+}
+
+const (
+	// Self calls
+	ModuleSourceExperimentalFeatureSelfCalls ModuleSourceExperimentalFeature = "SELF_CALLS"
 )
 
 // The kind of module source.

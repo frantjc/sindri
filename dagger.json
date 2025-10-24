@@ -1,6 +1,6 @@
 {
   "name": "sindri-dev",
-  "engineVersion": "v0.19.0",
+  "engineVersion": "v0.19.3",
   "sdk": {
     "source": "go"
   },
@@ -8,22 +8,22 @@
     {
       "name": "doug",
       "source": "github.com/vito/daggerverse/doug@main",
-      "pin": "1011ac6b83046b55a45283aba10e25cf9e99e06c"
+      "pin": "776610fc77055f983a3dca99f5f55946616c624e"
     },
     {
       "name": "go",
       "source": "github.com/frantjc/daggerverse/go@main",
-      "pin": "2cb1ea882fbf8ab6f88714d01affd483ba58f632"
+      "pin": "45772d1592aeabf5feee0ef93055ae197ee60c20"
     },
     {
       "name": "tls",
       "source": "github.com/frantjc/daggerverse/tls@main",
-      "pin": "2cb1ea882fbf8ab6f88714d01affd483ba58f632"
+      "pin": "45772d1592aeabf5feee0ef93055ae197ee60c20"
     },
     {
       "name": "wolfi",
-      "source": "github.com/dagger/dagger/modules/wolfi@v0.19.0",
-      "pin": "249af2710f43ed75b7d9e8b783efafd95e91bbd5"
+      "source": "github.com/dagger/dagger/modules/wolfi@v0.19.3",
+      "pin": "e6df42bb0f962c4051afb7cfd3ae99af5f65649e"
     }
   ],
   "source": ".dagger"

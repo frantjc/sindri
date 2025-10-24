@@ -9,20 +9,41 @@ import (
 	"strings"
 
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
+	xslices "github.com/frantjc/x/slices"
 )
 
 type SindriDev struct {
 	Source *dagger.Directory
+	Module string
 }
 
 func New(
+	ctx context.Context,
 	// +optional
 	// +defaultPath="."
 	src *dagger.Directory,
-) *SindriDev {
-	return &SindriDev{
-		Source: src,
+	// +optional
+	// +default="steamapps"
+	module string,
+) (*SindriDev, error) {
+	modules, err := src.Entries(ctx, dagger.DirectoryEntriesOpts{Path: "modules"})
+	if err != nil {
+		return nil, err
 	}
+
+	exclude := xslices.Map(
+		xslices.Filter(modules, func(m string, _ int) bool {
+			return m != "interface/" && m != module+"/"
+		}),
+		func(m string, _ int) string {
+			return path.Join("modules", m)
+		},
+	)
+
+	return &SindriDev{
+		Source: src.Filter(dagger.DirectoryFilterOpts{Exclude: exclude}),
+		Module: module,
+	}, nil
 }
 
 const (
@@ -34,12 +55,7 @@ const (
 	home  = "/home/" + user
 )
 
-func (m *SindriDev) Container(
-	ctx context.Context,
-	// +optional
-	// +default="steamapps"
-	module string,
-) (*dagger.Container, error) {
+func (m *SindriDev) Container(ctx context.Context) (*dagger.Container, error) {
 	version, err := dag.Version(ctx)
 	if err != nil {
 		return nil, err
@@ -101,7 +117,7 @@ func (m *SindriDev) Container(
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
 		WithWorkdir(home+"/.config/sindri/module").
-		WithDirectory(".", m.Source.Directory(path.Join("modules", module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
+		WithDirectory(".", m.Source.Directory(path.Join("modules", m.Module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
 }
 
@@ -110,15 +126,12 @@ func (m *SindriDev) Service(
 	// +optional
 	// +default="localhost"
 	hostname string,
-	// +optional
-	// +default="steamapps"
-	module string,
 ) (*dagger.Service, error) {
 	keyPair := dag.TLS().Ca().KeyPair(hostname)
 	crtPath := home + "/.config/sindri/tls.crt"
 	keyPath := home + "/.config/sindri/tls.key"
 
-	container, err := m.Container(ctx, module)
+	container, err := m.Container(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -142,9 +155,6 @@ func (m *SindriDev) Service(
 func (m *SindriDev) Test(
 	ctx context.Context,
 	// +optional
-	// +default="steamapps"
-	module string,
-	// +optional
 	// +default=[
 	// "valheim",
 	// "corekeeper"
@@ -155,7 +165,7 @@ func (m *SindriDev) Test(
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
 
-	svc, err := m.Service(ctx, alias, module)
+	svc, err := m.Service(ctx, alias)
 	if err != nil {
 		return nil, err
 	}
