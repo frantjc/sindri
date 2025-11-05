@@ -9,7 +9,6 @@ import (
 
 	_ "github.com/frantjc/sindri/backend/bucket"
 	_ "github.com/frantjc/sindri/backend/registry"
-	_ "github.com/frantjc/sindri/backend/registry/ghcr"
 	"github.com/frantjc/sindri/command"
 	xerrors "github.com/frantjc/x/errors"
 	xos "github.com/frantjc/x/os"

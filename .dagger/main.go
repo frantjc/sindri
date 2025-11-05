@@ -13,8 +13,9 @@ import (
 )
 
 type SindriDev struct {
-	Source *dagger.Directory
-	Module string
+	Source  *dagger.Directory
+	Module  string
+	Backend string
 }
 
 func New(
@@ -24,7 +25,10 @@ func New(
 	src *dagger.Directory,
 	// +optional
 	// +default="steamapps"
-	module string,
+	module,
+	// +optional
+	// +default="file:///home/sindri/.cache/sindri"
+	backend string,
 ) (*SindriDev, error) {
 	modules, err := src.Entries(ctx, dagger.DirectoryEntriesOpts{Path: "modules"})
 	if err != nil {
@@ -41,8 +45,9 @@ func New(
 	)
 
 	return &SindriDev{
-		Source: src.Filter(dagger.DirectoryFilterOpts{Exclude: exclude}),
-		Module: module,
+		Source:  src.Filter(dagger.DirectoryFilterOpts{Exclude: exclude}),
+		Module:  module,
+		Backend: backend,
 	}, nil
 }
 
@@ -145,6 +150,7 @@ func (m *SindriDev) Service(
 			ExperimentalPrivilegedNesting: true,
 			UseEntrypoint:                 true,
 			Args: []string{
+				"--backend", m.Backend,
 				"--tls-key", keyPath,
 				"--tls-crt", crtPath,
 				"--debug",

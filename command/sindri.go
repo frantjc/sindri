@@ -105,7 +105,7 @@ func NewSindri(version string) *cobra.Command {
 	slogConfig.AddFlags(cmd.Flags())
 
 	cmd.Flags().StringVar(&address, "addr", ":5000", "Address to listen on")
-	cmd.Flags().StringVar(&storage, "backend", fmt.Sprintf("file://%s?create_dir=1&no_tmp_dir=1", cache), "Storage backend URL")
+	cmd.Flags().StringVar(&storage, "backend", fmt.Sprintf("file://%s", cache), "Storage backend URL")
 
 	cmd.Flags().StringVar(&certFile, "tls-crt", "", "TLS certificate file")
 	cmd.Flags().StringVar(&keyFile, "tls-key", "", "TLS private key file")

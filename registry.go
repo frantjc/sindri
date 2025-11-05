@@ -10,7 +10,7 @@ import (
 	"github.com/opencontainers/go-digest"
 )
 
-func Digest(reference string) (digest.Digest, bool) {
+func dig(reference string) (digest.Digest, bool) {
 	d := digest.Digest(reference)
 	return d, d.Validate() == nil
 }
@@ -62,7 +62,7 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 		name := r.PathValue("name")
 		reference := r.PathValue("reference")
 
-		d, ok := Digest(reference)
+		d, ok := dig(reference)
 		if !ok {
 			var err error
 			if d, err = b.Store(
