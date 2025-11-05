@@ -1,4 +1,4 @@
-name: Precreate Steamapps in ghcr.io
+name: Pre-create Steamapps in ghcr.io
 on:
   workflow_dispatch: {}
 permissions:
@@ -7,7 +7,7 @@ permissions:
 jobs:
   # NB: Split up into multple jobs to avoid running out of disk space on the runner.
   # Put images that share a lot of layers on the same runner.
-  pre-create-wolfi-steamapps-in-ghcr:
+  pre-create-wolfi-steamapps-in-ghcr-0:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -16,7 +16,17 @@ jobs:
           DAGGER_NO_NAG: 1
         with:
           shell: |
-            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository palworld --repository satisfactory --repository valheim | combinedOutput
+            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository palworld | combinedOutput
+  pre-create-wolfi-steamapps-in-ghcr-1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dagger/dagger-for-github@v8.2.0
+        env:
+          DAGGER_NO_NAG: 1
+        with:
+          shell: |
+            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository satisfactory --repository valheim | combinedOutput
   pre-create-debian-steamapps-in-ghcr:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +37,7 @@ jobs:
         with:
           shell: |
             sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository corekeeper | combinedOutput
-  pre-create-winehq-steamapps-in-ghcr:
+  pre-create-winehq-steamapps-in-ghcr-0:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -36,4 +46,14 @@ jobs:
           DAGGER_NO_NAG: 1
         with:
           shell: |
-            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository abioticfactor --repository astroneer --repository enshrouded | combinedOutput
+            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository abioticfactor --repository astroneer | combinedOutput
+  pre-create-winehq-steamapps-in-ghcr-1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dagger/dagger-for-github@v8.2.0
+        env:
+          DAGGER_NO_NAG: 1
+        with:
+          shell: |
+            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository enshrouded | combinedOutput
