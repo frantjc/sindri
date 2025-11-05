@@ -12,13 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         repository:
+          - abioticfactor
+          - astroneer
+          - corekeeper
+          - enshrouded
           - palworld
           - satisfactory
           - valheim
-          - corekeeper
-          - abioticfactor
-          - astroneer
-          - enshrouded
     steps:
       - uses: actions/checkout@v5
       - uses: dagger/dagger-for-github@v8.2.0
