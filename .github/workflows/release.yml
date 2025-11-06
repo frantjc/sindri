@@ -19,7 +19,7 @@ jobs:
           DAGGER_NO_NAG: 1
         with:
           shell: |
-            function withGhcrAuth(container) {
+            withGhcrAuth(container) {
               $container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN
             }
             tag=$(version)
