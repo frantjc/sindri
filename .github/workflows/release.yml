@@ -16,12 +16,16 @@ jobs:
       - uses: dagger/dagger-for-github@v8.2.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          DAGGER_NO_NAG: 1
         with:
           shell: |
+            function withGhcrAuth(container) {
+              $container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN
+            }
             tag=$(version)
-            steamappsContainer=$(sindri-dev --module steamapps | container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
-            wolfiContainer=$(sindri-dev --module wolfi | container withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
-            gitContainer=$(sindri-dev --module git | container | withRegistryAuth ghcr.io ${{ github.actor }} env://GITHUB_TOKEN)
+            steamappsContainer=withGhcrAuth($(sindri-dev --module steamapps | container))
+            wolfiContainer=withGhcrAuth($(sindri-dev --module wolfi | container))
+            gitContainer=withGhcrAuth($(sindri-dev --module git | container))
             $steamappsContainer | publish ghcr.io/${{ github.repository }} &
             $steamappsContainer | publish ghcr.io/${{ github.repository }}:$tag &
             $steamappsContainer | publish ghcr.io/${{ github.repository }}:steamapps &
