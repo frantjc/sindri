@@ -1,8 +1,10 @@
 package registry
 
 import (
+	"bytes"
 	"cmp"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -116,12 +118,12 @@ func (r *Registry) Store(ctx context.Context, container *dagger.Container, clien
 
 // Manifest implements backend.Backend.
 func (b *Registry) Manifest(_ context.Context, name string, reference digest.Digest) (http.Handler, error) {
-	return b.proxy("", "/v2", name, "manifests", reference.String()), nil
+	return b.proxy("", "/v2", b.Repository, name, "manifests", reference.String()), nil
 }
 
 // Blob implements backend.Backend.
 func (b *Registry) Blob(_ context.Context, name string, reference digest.Digest) (http.Handler, error) {
-	return b.proxy("", "/v2", name, "blobs", reference.String()), nil
+	return b.proxy("", "/v2", b.Repository, name, "blobs", reference.String()), nil
 }
 
 // Root implements backend.AuthBackend.
@@ -170,6 +172,25 @@ func (b *Registry) proxy(query string, elem ...string) http.Handler {
 		}
 		defer res.Body.Close()
 
+		var body io.Reader = res.Body
+		if res.StatusCode >= 400 {
+			buf := new(bytes.Buffer)
+			body = io.TeeReader(body, buf)
+			go func() {
+				errors := struct{
+					Errors []struct{
+						Code string `json:"code"`
+						Message string `json:"message"`
+					} `json:"errors"`
+				}{}
+				if err := json.NewDecoder(buf).Decode(&errors); err == nil {
+					for _, e := range errors.Errors {
+						log.Error(e.Message, "code", e.Code)
+					}
+				}
+			}()
+		}
+
 		for k, v := range res.Header {
 			for _, vv := range v {
 				w.Header().Add(k, vv)
@@ -194,7 +215,7 @@ func (b *Registry) proxy(query string, elem ...string) http.Handler {
 
 		// Hopefully this is a redirect so we don't have to proxy massive blobs.
 		w.WriteHeader(res.StatusCode)
-		_, _ = io.Copy(w, res.Body)
+		_, _ = io.Copy(w, body)
 	})
 }
 
