@@ -128,7 +128,7 @@ func (b *Registry) Blob(_ context.Context, name string, reference digest.Digest)
 
 // Root implements backend.AuthBackend.
 func (b *Registry) Root(context.Context) (http.Handler, error) {
-	return b.proxy("", "/v2"), nil
+	return b.proxy("", "/v2/"), nil
 }
 
 // Token implements backend.AuthBackend.
@@ -177,9 +177,9 @@ func (b *Registry) proxy(query string, elem ...string) http.Handler {
 			buf := new(bytes.Buffer)
 			body = io.TeeReader(body, buf)
 			go func() {
-				errors := struct{
-					Errors []struct{
-						Code string `json:"code"`
+				errors := struct {
+					Errors []struct {
+						Code    string `json:"code"`
 						Message string `json:"message"`
 					} `json:"errors"`
 				}{}
@@ -187,6 +187,8 @@ func (b *Registry) proxy(query string, elem ...string) http.Handler {
 					for _, e := range errors.Errors {
 						log.Error(e.Message, "code", e.Code)
 					}
+				} else {
+					log.Error(buf.String())
 				}
 			}()
 		}

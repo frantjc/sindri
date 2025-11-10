@@ -7,6 +7,7 @@ import (
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
+	"github.com/google/uuid"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -21,7 +22,6 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 	if ab, ok := b.(backend.AuthBackend); ok {
 		mux.HandleFunc("GET /v2/", func(w http.ResponseWriter, r *http.Request) {
 			log := logutil.SloggerFrom(r.Context())
-			log.Info(r.Method + " " + r.URL.Path)
 
 			handler, err := ab.Root(r.Context())
 			if err != nil {
@@ -35,7 +35,6 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 
 		mux.HandleFunc("GET /v2/token", func(w http.ResponseWriter, r *http.Request) {
 			log := logutil.SloggerFrom(r.Context())
-			log.Info(r.Method + " " + r.URL.Path)
 
 			handler, err := ab.Token(r.Context())
 			if err != nil {
@@ -48,16 +47,12 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 		})
 	} else {
 		mux.HandleFunc("GET /v2/", func(w http.ResponseWriter, r *http.Request) {
-			log := logutil.SloggerFrom(r.Context())
-			log.Info(r.Pattern)
-
 			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 		})
 	}
 
 	mux.HandleFunc("GET /v2/{name}/manifests/{reference}", func(w http.ResponseWriter, r *http.Request) {
 		log := logutil.SloggerFrom(r.Context())
-		log.Info(r.Method + " " + r.URL.Path)
 
 		name := r.PathValue("name")
 		reference := r.PathValue("reference")
@@ -94,7 +89,6 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 
 	mux.HandleFunc("GET /v2/{name}/blobs/{reference}", func(w http.ResponseWriter, r *http.Request) {
 		log := logutil.SloggerFrom(r.Context())
-		log.Info(r.Method + " " + r.URL.Path)
 
 		name := r.PathValue("name")
 		d := digest.Digest(r.PathValue("reference"))
@@ -112,5 +106,10 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 		handler.ServeHTTP(w, r)
 	})
 
-	return mux
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		log := logutil.SloggerFrom(ctx).With("request", uuid.NewString())
+		log.Info(r.Method + " " + r.URL.Path)
+		mux.ServeHTTP(w, r.WithContext(logutil.SloggerInto(ctx, log)))
+	})
 }
