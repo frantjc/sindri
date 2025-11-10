@@ -166,6 +166,9 @@ func (m *SindriDev) Test(
 	// "corekeeper"
 	// ]
 	repository []string,
+	// +optional
+	// +default="go-containerregistry"
+	client string,
 ) (*dagger.Container, error) {
 	alias := "sindri.dagger.local"
 	hostname := fmt.Sprintf("%s:5000", alias)
@@ -176,20 +179,26 @@ func (m *SindriDev) Test(
 		return nil, err
 	}
 
-	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Include: []string{"go.mod", "go.sum", "e2e/**"},
-		}),
-	}).
-		Container().
-		WithFile(caCrtPath, dag.TLS().Ca().Crt()).
-		WithExec([]string{
-			"sh", "-c", fmt.Sprintf(`cat "%s" >> "/etc/ssl/certs/ca-certificates.crt"`, caCrtPath),
+	// TODO(frantjc): Test containerd client, and maybe others?
+	switch client {
+	case "go-containerregistry":
+		return dag.Go(dagger.GoOpts{
+			Module: m.Source.Filter(dagger.DirectoryFilterOpts{
+				Include: []string{"go.mod", "go.sum", "e2e/**"},
+			}),
 		}).
-		WithEnvVariable("SINDRI_TEST_REGISTRY", hostname).
-		WithEnvVariable("SINDRI_TEST_REPOSITORIES", strings.Join(repository, ",")).
-		WithServiceBinding(alias, svc).
-		WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
+			Container().
+			WithFile(caCrtPath, dag.TLS().Ca().Crt()).
+			WithExec([]string{
+				"sh", "-c", fmt.Sprintf(`cat "%s" >> "/etc/ssl/certs/ca-certificates.crt"`, caCrtPath),
+			}).
+			WithEnvVariable("SINDRI_TEST_REGISTRY", hostname).
+			WithEnvVariable("SINDRI_TEST_REPOSITORIES", strings.Join(repository, ",")).
+			WithServiceBinding(alias, svc).
+			WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
+	}
+
+	return nil, fmt.Errorf("unknown client %s", client)
 }
 
 func (m *SindriDev) Version(ctx context.Context) string {

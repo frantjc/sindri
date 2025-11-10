@@ -21,5 +21,5 @@ jobs:
           shell: |
             sindri-dev --module steamapps | test --repository corekeeper | combinedOutput &
             sindri-dev --module wolfi | test --repository zlib/go-1.25 | combinedOutput &
-            sindri-dev --module git | test --repository github.com/frantjc/sindri/testdata:${{ github.ref }} | combinedOutput &
+            sindri-dev --module git | test --repository github.com/frantjc/sindri/testdata/git/std:${{ github.ref }} --repository github.com/frantjc/sindri/testdata/git/nonstd:${{ github.ref }} | combinedOutput &
             .wait

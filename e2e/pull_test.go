@@ -24,6 +24,10 @@ func TestPull(t *testing.T) {
 		assert.FailNow(t, "SINDRI_TEST_REGISTRY must be set")
 	}
 
+	if !assert.NotEmpty(t, repositories) {
+		assert.FailNow(t, "SINDRI_TEST_REPOSITORIES must be set")
+	}
+
 	updates := make(chan v1.Update, 121)
 	defer close(updates)
 
