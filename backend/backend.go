@@ -15,6 +15,7 @@ type Backend interface {
 	Store(context.Context, *dagger.Container, *dagger.Client, string, string) (digest.Digest, error)
 	Manifest(context.Context, string, digest.Digest) (http.Handler, error)
 	Blob(context.Context, string, digest.Digest) (http.Handler, error)
+	Close() error
 }
 
 type AuthBackend interface {

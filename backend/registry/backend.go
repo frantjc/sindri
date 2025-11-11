@@ -19,6 +19,7 @@ import (
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
 	"github.com/opencontainers/go-digest"
+	specs "github.com/opencontainers/distribution-spec/specs-go/v1"
 )
 
 const Scheme = "registry"
@@ -92,11 +93,11 @@ var (
 )
 
 // Store implements backend.Backend.
-func (r *Registry) Store(ctx context.Context, container *dagger.Container, client *dagger.Client, name, reference string) (digest.Digest, error) {
+func (r *Registry) Store(ctx context.Context, container *dagger.Container, dag *dagger.Client, name, reference string) (digest.Digest, error) {
 	address, err := container.
 		WithRegistryAuth(r.Host,
 			r.Username,
-			client.SetSecret("github-token", r.Password),
+			dag.SetSecret("github-token", r.Password),
 		).
 		Publish(ctx,
 			fmt.Sprintf("%s:%s",
@@ -124,6 +125,11 @@ func (b *Registry) Manifest(_ context.Context, name string, reference digest.Dig
 // Blob implements backend.Backend.
 func (b *Registry) Blob(_ context.Context, name string, reference digest.Digest) (http.Handler, error) {
 	return b.proxy("", "/v2", b.Repository, name, "blobs", reference.String()), nil
+}
+
+// Close implements backend.Backend.
+func (b *Registry) Close() error {
+	return nil
 }
 
 // Root implements backend.AuthBackend.
@@ -177,15 +183,17 @@ func (b *Registry) proxy(query string, elem ...string) http.Handler {
 			buf := new(bytes.Buffer)
 			body = io.TeeReader(body, buf)
 			go func() {
-				errors := struct {
-					Errors []struct {
-						Code    string `json:"code"`
-						Message string `json:"message"`
-					} `json:"errors"`
-				}{}
+				errors := specs.ErrorResponse{}
 				if err := json.NewDecoder(buf).Decode(&errors); err == nil {
 					for _, e := range errors.Errors {
-						log.Error(e.Message, "code", e.Code)
+						args := []any{}
+						if e.Code != "" {
+							args = append(args, "code", e.Code)
+						}
+						if e.Detail != "" {
+							args = append(args, "detail", e.Detail)
+						}
+						log.Error(e.Message, args...)
 					}
 				} else {
 					log.Error(buf.String())

@@ -1,7 +1,8 @@
 {
   "name": "sindri",
-  "engineVersion": "v0.19.3",
+  "engineVersion": "v0.19.6",
   "sdk": {
     "source": "go"
-  }
+  },
+  "disableDefaultFunctionCaching": true
 }

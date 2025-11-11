@@ -17,13 +17,15 @@ func dig(reference string) (digest.Digest, bool) {
 	return d, d.Validate() == nil
 }
 
-func Handler(c *dagger.Client, b backend.Backend) http.Handler {
+func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /v2", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/v2/", http.StatusMovedPermanently)
 	})
 
+	// TODO(frantjc): use github.com/opencontainers/distribution-spec/specs-go/v1.ErrorResponse with correct error codes
+	// instead of http.Error(). See https://github.com/opencontainers/distribution-spec/blob/main/spec.md#error-codes.
 	if ab, ok := b.(backend.AuthBackend); ok {
 		mux.HandleFunc("GET /v2/{$}", func(w http.ResponseWriter, r *http.Request) {
 			log := logutil.SloggerFrom(r.Context())
@@ -80,9 +82,9 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 				var err error
 				if d, err = b.Store(
 					r.Context(),
-					c.Sindri().
+					dag.Sindri().
 						Container(name, reference),
-					c,
+					dag,
 					name,
 					reference,
 				); err != nil {

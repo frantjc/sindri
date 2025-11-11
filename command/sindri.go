@@ -61,19 +61,19 @@ func NewSindri(version string) *cobra.Command {
 				}
 				defer lis.Close()
 
-				c, err := dagger.Connect(ctx)
+				dag, err := dagger.Connect(ctx)
 				if err != nil {
 					return err
 				}
-				defer c.Close()
+				defer dag.Close()
 
 				b, err := backend.OpenBackend(ctx, storage)
 				if err != nil {
 					return err
 				}
-				// TODO(frantjc): defer b.Close()?
+				defer b.Close()
 
-				srv.Handler = sindri.Handler(c, b)
+				srv.Handler = sindri.Handler(dag, b)
 
 				eg.Go(func() error {
 					<-ctx.Done()

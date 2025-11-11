@@ -53,13 +53,13 @@ func init() {
 				return nil, err
 			}
 
-			s := &Bucket{
+			b := &Bucket{
 				Bucket:        bucket,
 				UseSignedURLs: useSignedURLs,
 				WorkDir:       os.TempDir(),
 			}
 
-			return s, nil
+			return b, nil
 		}),
 		azureblob.Scheme,
 		fileblob.Scheme,
@@ -301,4 +301,8 @@ func (b *Bucket) Blob(ctx context.Context, name string, reference digest.Digest)
 
 		_, _ = io.Copy(w, rc)
 	}), nil
+}
+
+func (b *Bucket) Close() error {
+	return b.Bucket.Close()
 }

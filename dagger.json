@@ -1,6 +1,6 @@
 {
   "name": "sindri-dev",
-  "engineVersion": "v0.19.3",
+  "engineVersion": "v0.19.6",
   "sdk": {
     "source": "go"
   },
@@ -26,5 +26,6 @@
       "pin": "e6df42bb0f962c4051afb7cfd3ae99af5f65649e"
     }
   ],
-  "source": ".dagger"
+  "source": ".dagger",
+  "disableDefaultFunctionCaching": true
 }

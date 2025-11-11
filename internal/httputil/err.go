@@ -7,7 +7,7 @@ import (
 	"gocloud.dev/gcerrors"
 )
 
-func NewHTTPStatusCodeError(err error, httpStatusCode int) error {
+func NewError(err error, httpStatusCode int) error {
 	if err == nil {
 		return nil
 	}

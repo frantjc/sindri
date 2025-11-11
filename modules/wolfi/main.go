@@ -16,13 +16,16 @@ package main
 
 import (
 	"dagger/wolfi/internal/dagger"
+	"slices"
 	"strings"
 )
 
 type Sindri struct{}
 
 func (m *Sindri) Container(name, reference string) *dagger.Container {
+	packages := strings.Split(name, "/")
+	slices.Sort(packages)
 	return dag.Wolfi().Container(dagger.WolfiContainerOpts{
-		Packages: strings.Split(name, "/"),
+		Packages: packages,
 	})
 }
