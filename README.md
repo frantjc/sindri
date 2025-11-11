@@ -5,7 +5,7 @@ Sindri is read-only container registry that builds images on-demand, as they are
 ## use cases
 
 - You're on a platform team providing base images for application teams, but can't keep track of which tool versions that they need.
-- You want to make builds available to users of a project, but they mostly go unused (e.g. nightly builds).
+- You want to make edge builds available to users of your project, but they would mostly go unused (e.g. nightly builds).
 - You're on a platform team that wants to provide base images that allow your users to mix and match dependencies.
 
 Generally, any time you want a container image to be available if it is needed, but you don't want to use the compute to build it and the disk to store it in case it isn't, Sindri can help. Read on for the use cases that inspired me to building Sindri.
