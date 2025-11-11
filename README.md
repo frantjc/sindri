@@ -4,7 +4,7 @@ Sindri is read-only container registry that builds images on-demand, as they are
 
 ## use cases
 
-- You're on a platform team providing base images for various languages for application teams, but you can't keep track of what versions application teams are using.
+- You're on a platform team providing base images for application teams, but can't keep track of which tool versions those application teams need.
 - You want to make builds available to users of a project, but they mostly go unused (e.g. nightly builds).
 - You're on a platform team that wants to provide base images that allow your users to mix and match dependencies.
 
@@ -96,15 +96,17 @@ docker run --volume /tmp:/tmp --publish 5000:5000 --detach --rm ghcr.io/frantjc/
 
 The same pattern follows for any other `gocloud.dev/blob` drivers.
 
-#### [ghcr.io](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+#### OCI registry
 
-Run Sindri using ghcr.io as its storage backend:
+Run Sindri using [ghcr.io](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) as its storage backend:
 
 ```sh
 docker run --env GITHUB_TOKEN=ghp_xxx --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug --backend registry://ghcr.io/<org>/<repo>
 ```
 
 > ghcr.io creates new container packages as private which must be manually changed to public as of writing. This will cause the first pull of any `<name>` from Sindri using ghcr.io as its storage backend to fail.
+
+> This is actually how I use Sindri personally with the steamapps module--you can see the [stored images on my GitHub page](https://github.com/frantjc?ecosystem=container&tab=packages&repo_name=sindri).
 
 ## thx
 
