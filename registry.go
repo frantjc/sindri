@@ -2,6 +2,7 @@ package sindri
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/frantjc/sindri-module/dagger"
 	"github.com/frantjc/sindri/backend"
@@ -19,8 +20,12 @@ func dig(reference string) (digest.Digest, bool) {
 func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("GET /v2", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/v2/", http.StatusMovedPermanently)
+	})
+
 	if ab, ok := b.(backend.AuthBackend); ok {
-		mux.HandleFunc("GET /v2/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("GET /v2/{$}", func(w http.ResponseWriter, r *http.Request) {
 			log := logutil.SloggerFrom(r.Context())
 
 			handler, err := ab.Root(r.Context())
@@ -46,64 +51,73 @@ func Handler(c *dagger.Client, b backend.Backend) http.Handler {
 			handler.ServeHTTP(w, r)
 		})
 	} else {
-		mux.HandleFunc("GET /v2/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("GET /v2/{$}", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 		})
 	}
 
-	mux.HandleFunc("GET /v2/{name}/manifests/{reference}", func(w http.ResponseWriter, r *http.Request) {
-		log := logutil.SloggerFrom(r.Context())
+	mux.HandleFunc("GET /v2/{pathname...}", func(w http.ResponseWriter, r *http.Request) {
+		pathname := r.PathValue("pathname")
+		parts := strings.Split(pathname, "/")
+		lenParts := len(parts)
+		if lenParts < 3 {
+			http.NotFound(w, r)
+			return
+		}
 
-		name := r.PathValue("name")
-		reference := r.PathValue("reference")
+		apiIndex := lenParts - 2
+		api := parts[apiIndex]
+		name := strings.Join(parts[:apiIndex], "/")
+		reference := parts[lenParts-1]
+		ctx := r.Context()
+		log := logutil.SloggerFrom(ctx).With("name", name, "reference", reference)
+		ctx = logutil.SloggerInto(ctx, log)
 
-		d, ok := dig(reference)
-		if !ok {
-			var err error
-			if d, err = b.Store(
+		switch api {
+		case "manifests":
+			d, ok := dig(reference)
+			if !ok {
+				var err error
+				if d, err = b.Store(
+					r.Context(),
+					c.Sindri().
+						Container(name, reference),
+					c,
+					name,
+					reference,
+				); err != nil {
+					log.Error(err.Error())
+					http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+					return
+				}
+			}
+
+			handler, err := b.Manifest(
 				r.Context(),
-				c.Sindri().
-					Container(name, reference),
-				c,
-				name,
-				reference,
-			); err != nil {
+				name, d,
+			)
+			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
 				return
 			}
+
+			handler.ServeHTTP(w, r)
+		case "blobs":
+			handler, err := b.Blob(
+				r.Context(),
+				name, digest.Digest(reference),
+			)
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
+				return
+			}
+
+			handler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
 		}
-
-		handler, err := b.Manifest(
-			r.Context(),
-			name, d,
-		)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-			return
-		}
-
-		handler.ServeHTTP(w, r)
-	})
-
-	mux.HandleFunc("GET /v2/{name}/blobs/{reference}", func(w http.ResponseWriter, r *http.Request) {
-		log := logutil.SloggerFrom(r.Context())
-
-		name := r.PathValue("name")
-		d := digest.Digest(r.PathValue("reference"))
-
-		handler, err := b.Blob(
-			r.Context(),
-			name, d,
-		)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
-			return
-		}
-
-		handler.ServeHTTP(w, r)
 	})
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

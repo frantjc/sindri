@@ -27,7 +27,7 @@ func New(
 	// +default="steamapps"
 	module,
 	// +optional
-	// +default="file:///home/sindri/.cache/sindri"
+	// +default="file:///home/sindri/.cache/sindri?no_tmp_dir=1"
 	backend string,
 ) (*SindriDev, error) {
 	modules, err := src.Entries(ctx, dagger.DirectoryEntriesOpts{Path: "modules"})

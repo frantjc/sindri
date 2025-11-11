@@ -45,30 +45,30 @@ func (m *Sindri) Container(ctx context.Context, name, reference string) (*dagger
 
 		entries, err := dir.Glob(ctx, ".sindri*")
 		if err != nil {
-			return dir.DockerBuild(), nil
+			return nil, err
 		}
 
-		if len(entries) > 0 {
-			entry := entries[0]
-
-			contents, err := dir.File(entry).Contents(ctx)
-			if err != nil {
-				return nil, err
-			}
-
+		for _, entry := range entries {
 			cfg := struct {
 				Dockerfile string `json:"dockerfile"`
 			}{}
 			ext := path.Ext(entry)
 			switch ext {
 			case ".json", ".yaml", ".yml":
+				contents, err := dir.File(entry).Contents(ctx)
+				if err != nil {
+					return nil, err
+				}
+
 				if err = yaml.Unmarshal([]byte(contents), &cfg); err != nil {
 					return nil, err
 				}
-			}
 
-			return dir.DockerBuild(dagger.DirectoryDockerBuildOpts{Dockerfile: cfg.Dockerfile}), nil
+				return dir.DockerBuild(dagger.DirectoryDockerBuildOpts{Dockerfile: cfg.Dockerfile}), nil
+			}
 		}
+
+		return dir.DockerBuild(), nil
 	}
 
 	return dag.Container(), nil
