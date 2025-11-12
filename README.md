@@ -85,7 +85,7 @@ Sindri supports multiple storage backends for cacheing and serving container ima
 Run Sindri using an s3 bucket as its storage backend:
 
 ```sh
-docker run --env AWS_ACCESS_KEY_ID=xxx --env AWS_SECRET_ACCESS_KEY=xxx --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug --backend s3://<bucket>?use_signed_urls=true
+docker run --volume ~/.aws:/home/sindri/.aws --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug --backend s3://<bucket>?use_signed_urls=true
 ```
 
 Run Sindri using a local directory as its storage backend:
