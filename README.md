@@ -8,7 +8,7 @@ Sindri is read-only container registry that builds images on-demand, as they are
 - You want to make edge builds available to users of your project, but they would mostly go unused (e.g. nightly builds).
 - You're on a platform team that wants to provide base images that allow your users to mix and match dependencies.
 
-Generally, any time you want a container image to be available, but you don't want to spare the compute and storage to build and store it in case it isn't needed, Sindri can help. Read on for the specific applications that inspired me to build Sindri.
+Generally, any time you want a container image to be available to container runtimes that cannot build images themselves (e.g. Kubernetes), but you don't want to spare the compute and storage to build and store it in case it isn't needed, Sindri can help. Read on for the specific applications that inspired me to build Sindri.
 
 ## how it works
 
@@ -85,7 +85,7 @@ Sindri supports multiple storage backends for cacheing and serving container ima
 Run Sindri using an s3 bucket as its storage backend:
 
 ```sh
-docker run --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug --backend s3://<bucket>?use_signed_urls=true
+docker run --env AWS_ACCESS_KEY_ID=xxx --env AWS_SECRET_ACCESS_KEY=xxx --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug --backend s3://<bucket>?use_signed_urls=true
 ```
 
 Run Sindri using a local directory as its storage backend:
