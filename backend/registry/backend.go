@@ -18,8 +18,8 @@ import (
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
-	"github.com/opencontainers/go-digest"
 	specs "github.com/opencontainers/distribution-spec/specs-go/v1"
+	"github.com/opencontainers/go-digest"
 )
 
 const Scheme = "registry"

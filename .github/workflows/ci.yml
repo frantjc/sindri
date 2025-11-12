@@ -19,7 +19,7 @@ jobs:
           DAGGER_NO_NAG: 1
         with:
           shell: |
-            sindri-dev --module steamapps | test --repository corekeeper | combinedOutput &
-            sindri-dev --module wolfi | test --repository zlib/go-1.25 | combinedOutput &
-            sindri-dev --module git | test --repository github.com/frantjc/sindri/testdata/git/std:${{ github.sha }} --repository github.com/frantjc/sindri/testdata/git/nonstd:${{ github.sha }} | combinedOutput &
+            test --module steamapps --repository corekeeper | combinedOutput &
+            test --module wolfi --repository zlib/go-1.25 | combinedOutput &
+            test --module git --repository github.com/frantjc/sindri/testdata/git/std:${{ github.sha }} --repository github.com/frantjc/sindri/testdata/git/nonstd:${{ github.sha }} | combinedOutput &
             .wait

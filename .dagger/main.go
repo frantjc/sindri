@@ -5,17 +5,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"path"
 	"strings"
 
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
-	xslices "github.com/frantjc/x/slices"
 )
 
 type SindriDev struct {
-	Source  *dagger.Directory
-	Module  string
-	Backend string
+	Source *dagger.Directory
 }
 
 func New(
@@ -23,32 +21,37 @@ func New(
 	// +optional
 	// +defaultPath="."
 	src *dagger.Directory,
-	// +optional
-	// +default="steamapps"
-	module,
-	// +optional
-	// +default="file:///home/sindri/.cache/sindri?no_tmp_dir=1"
-	backend string,
 ) (*SindriDev, error) {
-	modules, err := src.Entries(ctx, dagger.DirectoryEntriesOpts{Path: "modules"})
-	if err != nil {
-		return nil, err
+	return &SindriDev{
+		Source: src,
+	}, nil
+}
+
+func (m *SindriDev) Fmt() *dagger.Changeset {
+	goModules := []string{".dagger/", "modules/git/", "modules/interface/", "modules/steamapps/", "modules/wolfi/"}
+
+	root := dag.Go(dagger.GoOpts{
+		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
+			Exclude: goModules,
+		}),
+	}).
+		Container().
+		WithExec([]string{"go", "fmt", "./..."}).
+		Directory(".")
+
+	for _, module := range goModules {
+		root = root.WithDirectory(
+			module,
+			dag.Go(dagger.GoOpts{
+				Module: m.Source.Directory(module),
+			}).
+				Container().
+				WithExec([]string{"go", "fmt", "./..."}).
+				Directory("."),
+		)
 	}
 
-	exclude := xslices.Map(
-		xslices.Filter(modules, func(m string, _ int) bool {
-			return m != "interface/" && m != module+"/"
-		}),
-		func(m string, _ int) string {
-			return path.Join("modules", m)
-		},
-	)
-
-	return &SindriDev{
-		Source:  src.Filter(dagger.DirectoryFilterOpts{Exclude: exclude}),
-		Module:  module,
-		Backend: backend,
-	}, nil
+	return root.Changes(m.Source)
 }
 
 const (
@@ -60,7 +63,12 @@ const (
 	home  = "/home/" + user
 )
 
-func (m *SindriDev) Container(ctx context.Context) (*dagger.Container, error) {
+func (m *SindriDev) Container(
+	ctx context.Context,
+	// +optional
+	// +default="steamapps"
+	module string,
+) (*dagger.Container, error) {
 	version, err := dag.Version(ctx)
 	if err != nil {
 		return nil, err
@@ -122,7 +130,7 @@ func (m *SindriDev) Container(ctx context.Context) (*dagger.Container, error) {
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
 		WithWorkdir(home+"/.config/sindri/module").
-		WithDirectory(".", m.Source.Directory(path.Join("modules", m.Module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
+		WithDirectory(".", m.Source.Directory(path.Join("modules", module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
 }
 
@@ -131,18 +139,28 @@ func (m *SindriDev) Service(
 	// +optional
 	// +default="localhost"
 	hostname string,
+	// +optional
+	// +default="file:///home/sindri/.cache/sindri"
+	backend,
+	// +optional
+	module string,
 ) (*dagger.Service, error) {
-	keyPair := dag.TLS().Ca().KeyPair(hostname)
-	crtPath := home + "/.config/sindri/tls.crt"
-	keyPath := home + "/.config/sindri/tls.key"
-
-	container, err := m.Container(ctx)
+	container, err := m.Container(ctx, module)
 	if err != nil {
 		return nil, err
 	}
 
+	u, err := url.Parse(backend)
+	if err != nil {
+		return nil, err
+	}
+
+	keyPair := dag.TLS().Ca().KeyPair(hostname)
+	crtPath := home + "/.config/sindri/tls.crt"
+	keyPath := home + "/.config/sindri/tls.key"
+
 	return container.
-		WithMountedCache(home+"/.cache/sindri", dag.CacheVolume("sindri"), dagger.ContainerWithMountedCacheOpts{Owner: owner}).
+		WithMountedCache(path.Join(u.Host, u.Path), dag.CacheVolume("sindri"), dagger.ContainerWithMountedCacheOpts{Owner: owner}).
 		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithFile(crtPath, keyPair.Crt(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithExposedPort(5000).
@@ -150,7 +168,7 @@ func (m *SindriDev) Service(
 			ExperimentalPrivilegedNesting: true,
 			UseEntrypoint:                 true,
 			Args: []string{
-				"--backend", m.Backend,
+				"--backend", backend,
 				"--tls-key", keyPath,
 				"--tls-crt", crtPath,
 				"--debug",
@@ -168,13 +186,17 @@ func (m *SindriDev) Test(
 	repository []string,
 	// +optional
 	// +default="go-containerregistry"
-	client string,
+	client,
+	// +optional
+	backend,
+	// +optional
+	module string,
 ) (*dagger.Container, error) {
 	alias := "sindri.dagger.local"
 	hostname := fmt.Sprintf("%s:5000", alias)
 	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
 
-	svc, err := m.Service(ctx, alias)
+	svc, err := m.Service(ctx, alias, backend, module)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +206,7 @@ func (m *SindriDev) Test(
 	case "go-containerregistry":
 		return dag.Go(dagger.GoOpts{
 			Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-				Include: []string{"go.mod", "go.sum", "e2e/**"},
+				Include: []string{"go.mod", "go.sum", "e2e/"},
 			}),
 		}).
 			Container().
@@ -202,20 +224,28 @@ func (m *SindriDev) Test(
 }
 
 func (m *SindriDev) Version(ctx context.Context) string {
-	version := "0.0.0-unknown"
+	version := "v0.0.0-unknown"
 
 	ref, err := m.Source.AsGit().LatestVersion().Ref(ctx)
 	if err == nil {
-		version = strings.TrimPrefix(ref, "refs/tags/v")
+		version = strings.TrimPrefix(ref, "refs/tags/")
+	}
+
+	if empty, _ := m.Source.AsGit().Uncommitted().IsEmpty(ctx); !empty {
+		version += "*"
 	}
 
 	return version
 }
 
+func (m *SindriDev) Tag(ctx context.Context) string {
+	return strings.TrimSuffix(strings.TrimPrefix(m.Version(ctx), "v"), "*")
+}
+
 func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 	return dag.Go(dagger.GoOpts{
 		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{".github/**", "e2e/**"},
+			Exclude: []string{".github/", "e2e/"},
 		}),
 	}).
 		Build(dagger.GoBuildOpts{
@@ -241,7 +271,7 @@ func (m *SindriDev) Coder(ctx context.Context) (*dagger.LLM, error) {
 					dag.Env().
 						WithCurrentModule().
 						WithWorkspace(m.Source.Filter(dagger.DirectoryFilterOpts{
-							Exclude: []string{".dagger/**", ".github/**"},
+							Exclude: []string{".dagger/", ".github/"},
 						})),
 				).
 				WithBlockedFunction("Sindri", "container").

@@ -27,4 +27,4 @@ jobs:
         continue-on-error: true
         with:
           shell: |
-            sindri-dev --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} | test --repository ${{ matrix.repository }} | combinedOutput
+            test --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} --repository ${{ matrix.repository }} | combinedOutput
