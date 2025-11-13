@@ -64,6 +64,6 @@ func (m *Sindri) Container(name, reference string) *dagger.Container {
 			})
 	}
 
-	// TODO(frantjc): LLM?
-	return dag.Container()
+	// TODO(frantjc): Maybe try to handle the generic case?
+	return dag.Container().WithError("invalid name " + name + ", try one of: abioticfactor, astroneer, corekeeper, enshrouded, palworld, satisfactory, valheim")
 }

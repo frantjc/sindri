@@ -27,7 +27,11 @@ func New(
 	}, nil
 }
 
-func (m *SindriDev) Fmt() *dagger.Changeset {
+func (m *SindriDev) Fmt(
+	ctx context.Context,
+	// +optional
+	check bool,
+) (*dagger.Changeset, error) {
 	goModules := []string{".dagger/", "modules/git/", "modules/interface/", "modules/steamapps/", "modules/wolfi/"}
 
 	root := dag.Go(dagger.GoOpts{
@@ -51,7 +55,17 @@ func (m *SindriDev) Fmt() *dagger.Changeset {
 		)
 	}
 
-	return root.Changes(m.Source)
+	changeset := root.Changes(m.Source)
+
+	if check {
+		if empty, err := changeset.IsEmpty(ctx); err != nil {
+			return nil, err
+		} else if !empty {
+			return nil, fmt.Errorf("source is not formatted")
+		}
+	}
+
+	return changeset, nil
 }
 
 const (
@@ -276,6 +290,7 @@ func (m *SindriDev) Coder(ctx context.Context) (*dagger.LLM, error) {
 				).
 				WithBlockedFunction("Sindri", "container").
 				WithBlockedFunction("Sindri", "service").
+				WithBlockedFunction("Sindri", "tag").
 				WithBlockedFunction("Sindri", "version").
 				WithSystemPrompt(instructions).
 				WithMCPServer(
