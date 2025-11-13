@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
@@ -75,14 +76,20 @@ const (
 	user  = group
 	owner = user + ":" + group
 	home  = "/home/" + user
+
+	defaultBackend = "file://"+home+"/.cache/sindri"
+	defaultModule = "steamapps"
 )
 
 func (m *SindriDev) Container(
 	ctx context.Context,
 	// +optional
-	// +default="steamapps"
 	module string,
 ) (*dagger.Container, error) {
+	if module == "" {
+		module = defaultModule
+	}
+
 	version, err := dag.Version(ctx)
 	if err != nil {
 		return nil, err
@@ -154,14 +161,12 @@ func (m *SindriDev) Service(
 	// +default="localhost"
 	hostname string,
 	// +optional
-	// +default="file:///home/sindri/.cache/sindri"
 	backend,
 	// +optional
 	module string,
 ) (*dagger.Service, error) {
-	container, err := m.Container(ctx, module)
-	if err != nil {
-		return nil, err
+	if backend == "" {
+		backend = defaultBackend
 	}
 
 	u, err := url.Parse(backend)
@@ -169,12 +174,27 @@ func (m *SindriDev) Service(
 		return nil, err
 	}
 
+	container, err := m.Container(ctx, module)
+	if err != nil {
+		return nil, err
+	}
+
+	if u.Scheme == "file" {
+		container = container.
+			WithMountedCache(path.Join(u.Host, u.Path), dag.CacheVolume("sindri"), dagger.ContainerWithMountedCacheOpts{Owner: owner})
+
+		q := u.Query()
+		if noTmpDir, _ := strconv.ParseBool(q.Get("no_tmp_dir")); !noTmpDir {
+			q.Set("no_tmp_dir", "1")
+			u.RawQuery = q.Encode()
+		}
+	}
+
 	keyPair := dag.TLS().Ca().KeyPair(hostname)
 	crtPath := home + "/.config/sindri/tls.crt"
 	keyPath := home + "/.config/sindri/tls.key"
 
 	return container.
-		WithMountedCache(path.Join(u.Host, u.Path), dag.CacheVolume("sindri"), dagger.ContainerWithMountedCacheOpts{Owner: owner}).
 		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithFile(crtPath, keyPair.Crt(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithExposedPort(5000).
@@ -182,7 +202,7 @@ func (m *SindriDev) Service(
 			ExperimentalPrivilegedNesting: true,
 			UseEntrypoint:                 true,
 			Args: []string{
-				"--backend", backend,
+				"--backend", u.String(),
 				"--tls-key", keyPath,
 				"--tls-crt", crtPath,
 				"--debug",
