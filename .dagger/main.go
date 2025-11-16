@@ -77,8 +77,8 @@ const (
 	owner = user + ":" + group
 	home  = "/home/" + user
 
-	defaultBackend = "file://"+home+"/.cache/sindri"
-	defaultModule = "steamapps"
+	defaultBackend = "file://" + home + "/.cache/sindri"
+	defaultModule  = "steamapps"
 )
 
 func (m *SindriDev) Container(
