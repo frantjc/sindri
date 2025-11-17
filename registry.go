@@ -24,13 +24,14 @@ func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 		http.Redirect(w, r, "/v2/", http.StatusMovedPermanently)
 	})
 
-	// TODO(frantjc): use github.com/opencontainers/distribution-spec/specs-go/v1.ErrorResponse with correct error codes
+	// TODO(frantjc): Use github.com/opencontainers/distribution-spec/specs-go/v1.ErrorResponse with correct error codes
 	// instead of http.Error(). See https://github.com/opencontainers/distribution-spec/blob/main/spec.md#error-codes.
 	if ab, ok := b.(backend.AuthBackend); ok {
 		mux.HandleFunc("GET /v2/{$}", func(w http.ResponseWriter, r *http.Request) {
-			log := logutil.SloggerFrom(r.Context())
+			ctx := r.Context()
+			log := logutil.SloggerFrom(ctx)
 
-			handler, err := ab.Root(r.Context())
+			handler, err := ab.Root(ctx)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
@@ -41,9 +42,10 @@ func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 		})
 
 		mux.HandleFunc("GET /v2/token", func(w http.ResponseWriter, r *http.Request) {
-			log := logutil.SloggerFrom(r.Context())
+			ctx := r.Context()
+			log := logutil.SloggerFrom(ctx)
 
-			handler, err := ab.Token(r.Context())
+			handler, err := ab.Token(ctx)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), httputil.HTTPStatusCode(err))
@@ -81,7 +83,7 @@ func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 			if !ok {
 				var err error
 				if d, err = b.Store(
-					r.Context(),
+					ctx,
 					dag.Sindri().
 						Container(name, reference),
 					dag,
@@ -95,7 +97,7 @@ func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 			}
 
 			handler, err := b.Manifest(
-				r.Context(),
+				ctx,
 				name, d,
 			)
 			if err != nil {
@@ -107,7 +109,7 @@ func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 			handler.ServeHTTP(w, r)
 		case "blobs":
 			handler, err := b.Blob(
-				r.Context(),
+				ctx,
 				name, digest.Digest(reference),
 			)
 			if err != nil {
