@@ -88,12 +88,12 @@ func (m *SindriDev) Fmt(
 }
 
 const (
-	gid   = "1001"
-	uid   = gid
-	group = "sindri"
-	user  = group
-	owner = user + ":" + group
-	home  = "/home/" + user
+	gid            = "1001"
+	uid            = gid
+	group          = "sindri"
+	user           = group
+	owner          = user + ":" + group
+	home           = "/home/" + user
 	defaultBackend = "file://" + home + "/.cache/sindri"
 	defaultModule  = "steamapps"
 )
