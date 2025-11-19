@@ -2,8 +2,8 @@
 
 // Enables building Docker containers for various Steamapp dedicated servers.
 //
-// The `name` parameter should match a supported game name (e.g. "palworld",
-// "valheim", "satisfactory"), and the `reference` parameter specifies the
+// The <name> parameter should match a supported game name (e.g. "palworld",
+// "valheim", "satisfactory"), and the <reference> parameter specifies the
 // server branch, with "latest" defaulting to "public".
 //
 // For example, `docker pull localhost:5000/valheim:publictest` will build

@@ -2,8 +2,8 @@
 
 // Defines the standard interface for Sindri-compatible Dagger modules.
 //
-// The `name` parameter represents the full image name being requested, and the
-// `reference` parameter specifies the tag or reference to build. Modules should
+// The <name> parameter represents the full image name being requested, and the
+// <reference> parameter specifies the tag or reference to build. Modules should
 // parse the name to determine how to build the appropriate container.
 
 package main

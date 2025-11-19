@@ -2,8 +2,8 @@
 
 // Enables the building Docker containers from Git repositories,
 //
-// The `name` parameter should be formatted "host/owner/repo[/subdirectory/path]",
-// and the `reference` parameter specifies the Git reference to use, with "latest"
+// The <name> parameter should be formatted "<host>/<owner>/<repo>[/<path>]",
+// and the <reference> parameter specifies the Git reference to use, with "latest"
 // defaulting to HEAD.
 //
 // For example, `docker pull localhost:5000/github.com/frantjc/sindri/testdata/git/std:main`
@@ -71,5 +71,5 @@ func (m *Sindri) Container(ctx context.Context, name, reference string) (*dagger
 		return dir.DockerBuild(), nil
 	}
 
-	return dag.Container(), nil
+	return dag.Container().WithError("invalid name, must be of the format: <host>/<owner>/<repo>[/<path>], e.g. github.com/frantjc/sindri/testdata/sindri"), nil
 }
