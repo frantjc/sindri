@@ -42,7 +42,7 @@ func (m *Corekeeper) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := home+"/.local/share/sindri/steamapp"
+	steamappDirectoryPath := home + "/.local/share/sindri/steamapp"
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch: branch,

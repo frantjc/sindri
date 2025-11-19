@@ -1,6 +1,6 @@
 {
   "name": "astroneer",
-  "engineVersion": "v0.19.3",
+  "engineVersion": "v0.19.6",
   "sdk": {
     "source": "go"
   },
@@ -20,5 +20,6 @@
       "source": "github.com/frantjc/daggerverse/steamcmd@main",
       "pin": "2bfe430bc7ba1e92244a56d7df0053857812f6ba"
     }
-  ]
+  ],
+  "disableDefaultFunctionCaching": true
 }

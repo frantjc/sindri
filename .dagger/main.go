@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
+	xslices "github.com/frantjc/x/slices"
 )
 
 type SindriDev struct {
@@ -33,7 +34,20 @@ func (m *SindriDev) Fmt(
 	// +optional
 	check bool,
 ) (*dagger.Changeset, error) {
-	goModules := []string{".dagger/", "modules/git/", "modules/interface/", "modules/steamapps/", "modules/wolfi/"}
+	goModules := []string{
+		".dagger/",
+		"modules/git/",
+		"modules/interface/",
+		"modules/steamapps/",
+		"modules/steamapps/abioticfactor/",
+		"modules/steamapps/astroneer/",
+		"modules/steamapps/corekeeper/",
+		"modules/steamapps/enshrouded/",
+		"modules/steamapps/palworld/",
+		"modules/steamapps/satisfactory/",
+		"modules/steamapps/valheim/",
+		"modules/wolfi/",
+	}
 
 	root := dag.Go(dagger.GoOpts{
 		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
@@ -48,7 +62,11 @@ func (m *SindriDev) Fmt(
 		root = root.WithDirectory(
 			module,
 			dag.Go(dagger.GoOpts{
-				Module: m.Source.Directory(module),
+				Module: m.Source.Directory(module).Filter(dagger.DirectoryFilterOpts{
+					Exclude: xslices.Filter(goModules, func(m string, _ int) bool {
+						return strings.HasPrefix(m, module)
+					}),
+				}),
 			}).
 				Container().
 				WithExec([]string{"go", "fmt", "./..."}).
@@ -76,7 +94,6 @@ const (
 	user  = group
 	owner = user + ":" + group
 	home  = "/home/" + user
-
 	defaultBackend = "file://" + home + "/.cache/sindri"
 	defaultModule  = "steamapps"
 )
@@ -165,6 +182,8 @@ func (m *SindriDev) Service(
 	// +optional
 	module string,
 ) (*dagger.Service, error) {
+	// NB: Not using +default pragma because it does not get used when
+	// other methods in the module call the method with the pragma.
 	if backend == "" {
 		backend = defaultBackend
 	}

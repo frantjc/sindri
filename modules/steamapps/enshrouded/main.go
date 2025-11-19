@@ -43,7 +43,7 @@ func (m *Enshrouded) Container(
 		return nil, err
 	}
 
-	steamappDirectoryPath := home+"/.local/share/sindri/steamapp"
+	steamappDirectoryPath := home + "/.local/share/sindri/steamapp"
 
 	steamappDirectory := dag.Steamcmd().AppUpdate(appID, dagger.SteamcmdAppUpdateOpts{
 		Branch:       branch,
@@ -94,10 +94,6 @@ func (m *Enshrouded) Container(
 			path.Join(steamappDirectoryPath, launch.Executable),
 		}), nil
 }
-
-var (
-	isWindows = supportsOS("windows")
-)
 
 func supportsOS(os string) func(launch *steamcmd.AppInfoConfigLaunch) bool {
 	return func(launch *steamcmd.AppInfoConfigLaunch) bool {

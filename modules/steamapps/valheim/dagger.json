@@ -1,6 +1,6 @@
 {
   "name": "valheim",
-  "engineVersion": "v0.19.3",
+  "engineVersion": "v0.19.6",
   "sdk": {
     "source": "go"
   },
@@ -20,5 +20,6 @@
       "source": "github.com/dagger/dagger/modules/wolfi@v0.19.3",
       "pin": "249af2710f43ed75b7d9e8b783efafd95e91bbd5"
     }
-  ]
+  ],
+  "disableDefaultFunctionCaching": true
 }
