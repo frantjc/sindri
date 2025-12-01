@@ -39,13 +39,6 @@ func (m *SindriDev) Fmt(
 		"modules/git/",
 		"modules/interface/",
 		"modules/steamapps/",
-		"modules/steamapps/abioticfactor/",
-		"modules/steamapps/astroneer/",
-		"modules/steamapps/corekeeper/",
-		"modules/steamapps/enshrouded/",
-		"modules/steamapps/palworld/",
-		"modules/steamapps/satisfactory/",
-		"modules/steamapps/valheim/",
 		"modules/wolfi/",
 	}
 

@@ -1,42 +1,14 @@
 {
   "name": "sindri",
-  "engineVersion": "v0.19.6",
+  "engineVersion": "v0.19.7",
   "sdk": {
     "source": "go"
   },
   "dependencies": [
     {
-      "name": "abioticfactor",
-      "source": "abioticfactor"
-    },
-    {
-      "name": "astroneer",
-      "source": "astroneer"
-    },
-    {
-      "name": "corekeeper",
-      "source": "corekeeper"
-    },
-    {
-      "name": "enshrouded",
-      "source": "enshrouded"
-    },
-    {
-      "name": "palworld",
-      "source": "palworld"
-    },
-    {
-      "name": "satisfactory",
-      "source": "satisfactory"
-    },
-    {
-      "name": "steamcmd",
-      "source": "github.com/frantjc/daggerverse/steamcmd@main",
-      "pin": "45772d1592aeabf5feee0ef93055ae197ee60c20"
-    },
-    {
-      "name": "valheim",
-      "source": "valheim"
+      "name": "wolfi",
+      "source": "github.com/dagger/dagger/modules/wolfi@v0.19.7",
+      "pin": "81fe990dd3cd47ae45dd91ba680f8854aa56aa66"
     }
   ],
   "disableDefaultFunctionCaching": true

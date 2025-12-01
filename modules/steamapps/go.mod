@@ -5,6 +5,9 @@ go 1.25.1
 require (
 	github.com/99designs/gqlgen v0.17.83
 	github.com/Khan/genqlient v0.8.1
+	github.com/frantjc/go-encoding-vdf v0.0.0-20251124051322-8462493d21b6
+	github.com/frantjc/go-steamcmd v0.0.0-20251124221631-1e85d1480405
+	github.com/frantjc/x v0.0.0-20251124021033-235d2232e229
 	github.com/vektah/gqlparser/v2 v2.5.31
 	go.opentelemetry.io/otel v1.38.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.14.0
@@ -25,6 +28,7 @@ require (
 )
 
 require (
+	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
