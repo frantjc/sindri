@@ -34,11 +34,11 @@ const (
 	owner = user + ":" + group
 	home  = "/home/" + user
 
-	defaultTag = "public"
+	defaultTag    = "public"
 	defaultBranch = "latest"
 
 	steamappDirectoryPath = home + "/.local/share/sindri/steamapp"
-	steamClientSoPath = steamappDirectoryPath+"/linux64/steamclient.so"
+	steamClientSoPath     = steamappDirectoryPath + "/linux64/steamclient.so"
 	steamClientSoLinkPath = "/usr/lib/x86_64-linux-gnu/steamclient.so"
 )
 
@@ -54,10 +54,9 @@ var (
 	}
 )
 
-
 var (
 	isWindows = supportsOS("windows")
-	isLinux = supportsOS("linux")
+	isLinux   = supportsOS("linux")
 )
 
 type appInfoLaunchConfigFilter func(launch *steamcmd.AppInfoConfigLaunch) bool
@@ -77,7 +76,6 @@ func getLaunch(appInfo *steamcmd.AppInfo, f appInfoLaunchConfigFilter) (*steamcm
 
 	return nil, false
 }
-
 
 func (m *Sindri) Container(ctx context.Context, name, reference string) (*dagger.Container, error) {
 	if reference == "latest" {

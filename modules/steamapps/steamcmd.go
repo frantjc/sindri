@@ -13,7 +13,6 @@ import (
 	"github.com/frantjc/go-steamcmd"
 )
 
-
 func steamcmdContainer() *dagger.Container {
 	return dag.Container().
 		From("steamcmd/steamcmd")
@@ -55,7 +54,7 @@ func appInfoPrint(
 
 	appInfo := &steamcmd.AppInfo{}
 
-	if err := vdf.NewDecoder(strings.NewReader(rawAppInfo[appInfoStartTokenIndex:appInfoStartTokenIndex+appInfoEndTokenIndex])).Decode(appInfo); err != nil {
+	if err := vdf.NewDecoder(strings.NewReader(rawAppInfo[appInfoStartTokenIndex : appInfoStartTokenIndex+appInfoEndTokenIndex])).Decode(appInfo); err != nil {
 		return nil, err
 	}
 

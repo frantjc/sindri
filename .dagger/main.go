@@ -29,11 +29,17 @@ func New(
 	}, nil
 }
 
-func (m *SindriDev) Fmt(
-	ctx context.Context,
-	// +optional
-	check bool,
-) (*dagger.Changeset, error) {
+func (m *SindriDev) PreCommit(ctx context.Context) error {
+	if empty, err := m.Fmt(ctx).IsEmpty(ctx); err != nil {
+		return err
+	} else if !empty {
+		return fmt.Errorf("source is not formatted")
+	}
+
+	return nil
+}
+
+func (m *SindriDev) Fmt(ctx context.Context) *dagger.Changeset {
 	goModules := []string{
 		".dagger/",
 		"modules/git/",
@@ -67,17 +73,7 @@ func (m *SindriDev) Fmt(
 		)
 	}
 
-	changeset := root.Changes(m.Source)
-
-	if check {
-		if empty, err := changeset.IsEmpty(ctx); err != nil {
-			return nil, err
-		} else if !empty {
-			return nil, fmt.Errorf("source is not formatted")
-		}
-	}
-
-	return changeset, nil
+	return root.Changes(m.Source)
 }
 
 const (
