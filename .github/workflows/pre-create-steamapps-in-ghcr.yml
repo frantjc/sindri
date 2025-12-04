@@ -21,10 +21,11 @@ jobs:
           - valheim
     steps:
       - uses: actions/checkout@v6
-      - uses: dagger/dagger-for-github@v8.2.0
-        env:
-          DAGGER_NO_NAG: 1
-        continue-on-error: true
+      - uses: frantjc/actions/setup-tool@v1
         with:
-          shell: |
-            test --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} --repository ${{ matrix.repository }} | combinedOutput
+          repository: dagger/dagger
+          version: v0.19.7
+      - shell: dagger {0}
+        continue-on-error: true
+        run: |
+          test --module steamapps --backend registry://${{ github.actor }}:${{ github.token }}@ghcr.io/${{ github.repository }} --repository ${{ matrix.repository }} | combinedOutput
