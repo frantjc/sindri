@@ -14,13 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: dagger/dagger-for-github@v8.2.0
-        env:
-          DAGGER_NO_NAG: 1
+      - uses: frantjc/actions/setup-tool@v1
         with:
-          shell: |
-            fmt --check &
-            test --module steamapps --repository corekeeper | combinedOutput &
-            test --module wolfi --repository zlib/go-1.25 | combinedOutput &
-            test --module git --repository github.com/frantjc/sindri/testdata/git/std:${{ github.sha }} --repository github.com/frantjc/sindri/testdata/git/nonstd:${{ github.sha }} | combinedOutput &
-            .wait
+          repository: dagger/dagger
+          version: v0.19.7
+      - shell: dagger {0}
+        run: |
+          isFmted &
+          test --module steamapps --repository corekeeper | combinedOutput &
+          test --module wolfi --repository zlib/go-1.25 | combinedOutput &
+          test --module git --repository github.com/frantjc/sindri/testdata/git/std:${{ github.sha }} --repository github.com/frantjc/sindri/testdata/git/nonstd:${{ github.sha }} | combinedOutput &
+          .wait
