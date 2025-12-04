@@ -33,7 +33,6 @@ func (m *SindriDev) Fmt(ctx context.Context) *dagger.Changeset {
 	goModules := []string{
 		".dagger/",
 		"modules/git/",
-		"modules/interface/",
 		"modules/steamapps/",
 		"modules/wolfi/",
 	}
@@ -47,7 +46,7 @@ func (m *SindriDev) Fmt(ctx context.Context) *dagger.Changeset {
 		WithExec([]string{"go", "fmt", "./..."}).
 		Directory(".")
 
-	for _, module := range goModules {
+	for _, module := range append(goModules, "modules/interface/") {
 		root = root.WithDirectory(
 			module,
 			dag.Go(dagger.GoOpts{

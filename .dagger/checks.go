@@ -15,4 +15,3 @@ func (m *SindriDev) IsFmted(ctx context.Context) error {
 
 	return nil
 }
-
