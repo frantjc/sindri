@@ -359,10 +359,10 @@ func (m *SindriDev) Coder(ctx context.Context) (*dagger.LLM, error) {
 							Exclude: []string{".dagger/", ".github/"},
 						})),
 				).
-				WithBlockedFunction("Sindri", "container").
-				WithBlockedFunction("Sindri", "service").
-				WithBlockedFunction("Sindri", "tag").
-				WithBlockedFunction("Sindri", "version").
+				WithBlockedFunction("SindriDev", "container").
+				WithBlockedFunction("SindriDev", "service").
+				WithBlockedFunction("SindriDev", "tag").
+				WithBlockedFunction("SindriDev", "version").
 				WithSystemPrompt(instructions).
 				WithMCPServer(
 					"gopls",
