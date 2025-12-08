@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	gocloud.dev v0.44.0
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
-	golang.org/x/sync v0.18.0
+	golang.org/x/sync v0.19.0
 )
 
 replace github.com/frantjc/sindri-module => ./modules/interface
