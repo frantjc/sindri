@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/adrg/xdg v0.5.3
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.93.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.94.0
 	github.com/frantjc/sindri-module v0.0.0-replaced
 	github.com/frantjc/x v0.0.0-20251110020906-e460e4351f65
 	github.com/google/go-containerregistry v0.20.7
