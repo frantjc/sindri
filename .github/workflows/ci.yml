@@ -17,7 +17,7 @@ jobs:
       - uses: frantjc/actions/setup-tool@v1
         with:
           repository: dagger/dagger
-          version: v0.19.7
+          version: v0.19.8
       - shell: dagger {0}
         run: |
           isFmted &

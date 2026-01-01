@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	_ "github.com/cli/cli/v2/pkg/cmd/factory" // TODO(frantjc): Smart auth
 	"github.com/frantjc/sindri-module/dagger"
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/httputil"
