@@ -2,23 +2,27 @@ package registry
 
 import (
 	"bytes"
-	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"strconv"
 	"strings"
 
-	_ "github.com/cli/cli/v2/pkg/cmd/factory" // TODO(frantjc): Smart auth
+	"github.com/cli/cli/v2/api"
+	"github.com/cli/cli/v2/pkg/cmd/factory"
+	"github.com/fluxcd/pkg/auth"
+	"github.com/fluxcd/pkg/auth/aws"
+	"github.com/fluxcd/pkg/auth/azure"
+	authutils "github.com/fluxcd/pkg/auth/utils"
 	"github.com/frantjc/sindri-module/dagger"
 	"github.com/frantjc/sindri/backend"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
+	xslices "github.com/frantjc/x/slices"
 	specs "github.com/opencontainers/distribution-spec/specs-go/v1"
 	"github.com/opencontainers/go-digest"
 )
@@ -48,16 +52,8 @@ func init() {
 
 			switch host {
 			case "ghcr.io":
-				username = cmp.Or(username, os.Getenv("GITHUB_ACTOR"))
-				password = cmp.Or(password, os.Getenv("GITHUB_TOKEN"))
-
 				if repository == "" {
-					placeholder := "<user>"
-					if username != "" {
-						placeholder = username
-					}
-
-					return nil, fmt.Errorf("repository cannot be empty for %s: try %s://%s/%s", host, Scheme, host, placeholder)
+					return nil, fmt.Errorf("repository cannot be empty for %s: try %s://%s/<user>", host, Scheme, host)
 				}
 			case "gcr.io":
 				tokenPath = "/v2/token"
@@ -80,6 +76,69 @@ func init() {
 	)
 }
 
+func (r *Registry) getRegistryAuth(ctx context.Context, ref string) (string, string, bool, error) {
+	if r.Username != "" && r.Password != "" {
+		return r.Username, r.Password, true, nil
+	}
+
+	switch {
+	case r.Host == "ghcr.io":
+		cfg, err := factory.New("v0.0.0-unknown").Config()
+		if err != nil {
+			return "", "", false, err
+		}
+
+		authCfg := cfg.Authentication()
+
+		httpClient, err := api.NewHTTPClient(api.HTTPClientOptions{
+			Config: authCfg,
+		})
+		if err != nil {
+			return "", "", false, err
+		}
+
+		username, err := authCfg.ActiveUser("github.com")
+		if err != nil {
+			var nerr error
+			username, nerr = api.CurrentLoginName(api.NewClientFromHTTP(httpClient), "github.com")
+			if nerr != nil {
+				return "", "", false, fmt.Errorf("%v: %v", err, nerr)
+			}
+		}
+
+		password, _ := authCfg.ActiveToken("github.com")
+
+		return username, password, true, nil
+	case xslices.Some([]string{".azurecr.io", ".azurecr.us", ".azurecr.cn"}, func(suffix string, _ int) bool {
+		return strings.HasSuffix(r.Host, suffix)
+	}):
+		return r.getRegistryAuthForProvider(ctx, ref, azure.ProviderName)
+	case strings.HasSuffix(r.Host, ".amazonaws.com"):
+		return r.getRegistryAuthForProvider(ctx, ref, aws.ProviderName)
+	}
+
+	return "", "", false, nil
+}
+
+func (r *Registry) getRegistryAuthForProvider(ctx context.Context, ref, provider string) (string, string, bool, error) {
+	authOpts := []auth.Option{}
+	if provider == azure.ProviderName {
+		authOpts = append(authOpts, auth.WithAllowShellOut())
+	}
+
+	authenticator, err := authutils.GetArtifactRegistryCredentials(ctx, provider, fmt.Sprintf("oci://%s", ref), authOpts...)
+	if err != nil {
+		return "", "", false, err
+	}
+
+	authConfig, err := authenticator.Authorization()
+	if err != nil {
+		return "", "", false, err
+	}
+
+	return authConfig.Username, authConfig.Password, true, nil
+}
+
 type Registry struct {
 	Scheme     string
 	Username   string
@@ -95,17 +154,19 @@ var (
 
 // Store implements backend.Backend.
 func (r *Registry) Store(ctx context.Context, container *dagger.Container, dag *dagger.Client, name, reference string) (digest.Digest, error) {
-	address, err := container.
-		WithRegistryAuth(r.Host,
-			r.Username,
-			dag.SetSecret("github-token", r.Password),
-		).
-		Publish(ctx,
-			fmt.Sprintf("%s:%s",
-				path.Join(r.Host, r.Repository, name),
-				reference,
-			),
-		)
+	ref := fmt.Sprintf("%s:%s",
+		path.Join(r.Host, r.Repository, name),
+		reference,
+	)
+
+	username, password, ok, err := r.getRegistryAuth(ctx, ref)
+	if err != nil {
+		return "", err
+	} else if ok {
+		container = container.WithRegistryAuth(r.Host, username, dag.SetSecret("password", password))
+	}
+
+	address, err := container.Publish(ctx, ref)
 	if err != nil {
 		return "", err
 	}

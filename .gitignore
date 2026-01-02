@@ -2,8 +2,8 @@
 .idea/
 .vscode/
 
-# dev
-.env
+# make
+/bin
 
 # macOS
 .DS_Store
