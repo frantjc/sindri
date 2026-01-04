@@ -76,10 +76,22 @@ func appUpdate(
 
 	steamappDirectoryPath := "/out"
 
-	appUpdateArgs, err := steamcmd.Args(nil,
+	commands := []steamcmd.Command{
 		steamcmd.ForceInstallDir(steamappDirectoryPath),
 		steamcmd.Login{},
-		steamcmd.ForcePlatformType(platformType),
+	}
+
+	// NB: steamcmd app_update for the Satisfactory dedicated server regressed to exiting 8 with error message
+	// "Missing configuration." This ended up being resolvable by removing @sSteamCmdForcePlatformType linux,
+	// but I think that the underlying cause is using @sSteamCmdForcePlatformType to force the platform type
+	// to the default platform type, which inside of the container that we're using is, of course, linux.
+	switch platformType {
+	case "", steamcmd.PlatformTypeLinux:
+	default:
+		commands = append(commands, steamcmd.ForcePlatformType(platformType))
+	}
+
+	commands = append(commands,
 		steamcmd.AppUpdate{
 			AppID:        appID,
 			Beta:         branch,
@@ -87,6 +99,8 @@ func appUpdate(
 		},
 		steamcmd.Quit,
 	)
+
+	appUpdateArgs, err := steamcmd.Args(nil, commands...)
 	if err != nil {
 		return nil, nil, err
 	}
