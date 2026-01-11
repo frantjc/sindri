@@ -338,37 +338,3 @@ func (m *SindriDev) Staticcheck(ctx context.Context) (string, error) {
 		WithExec([]string{"staticcheck", "./..."}).
 		CombinedOutput(ctx)
 }
-
-func (m *SindriDev) Coder(ctx context.Context) (*dagger.LLM, error) {
-	gopls := dag.Go(dagger.GoOpts{Module: m.Source}).
-		Container().
-		WithExec([]string{"go", "install", "golang.org/x/tools/gopls@latest"})
-
-	instructions, err := gopls.WithExec([]string{"gopls", "mcp", "-instructions"}).Stdout(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return dag.Doug().
-		Agent(
-			dag.LLM().
-				WithEnv(
-					dag.Env().
-						WithCurrentModule().
-						WithWorkspace(m.Source.Filter(dagger.DirectoryFilterOpts{
-							Exclude: []string{".dagger/", ".github/"},
-						})),
-				).
-				WithBlockedFunction("SindriDev", "container").
-				WithBlockedFunction("SindriDev", "service").
-				WithBlockedFunction("SindriDev", "tag").
-				WithBlockedFunction("SindriDev", "version").
-				WithSystemPrompt(instructions).
-				WithMCPServer(
-					"gopls",
-					gopls.AsService(dagger.ContainerAsServiceOpts{
-						Args: []string{"gopls", "mcp"},
-					}),
-				),
-		), nil
-}

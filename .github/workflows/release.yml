@@ -16,7 +16,7 @@ jobs:
       - uses: frantjc/actions/setup-tool@v1
         with:
           repository: dagger/dagger
-          version: v0.19.8
+          version: v0.19.9
       - shell: dagger {0}
         env:
           GITHUB_TOKEN: ${{ github.token }}
