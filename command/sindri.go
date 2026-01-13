@@ -8,9 +8,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"time"
 
+	daggerio "dagger.io/dagger"
 	"github.com/adrg/xdg"
 	"github.com/frantjc/sindri"
 	"github.com/frantjc/sindri-module/dagger"
@@ -61,7 +64,20 @@ func NewSindri(version string) *cobra.Command {
 				}
 				defer lis.Close()
 
-				dag, err := dagger.Connect(ctx)
+				if os.MkdirAll(filepath.Join(xdg.StateHome, "sindri"), 0755); err != nil {
+					return err
+				}
+
+				daggerLog, err := os.Create(filepath.Join(xdg.StateHome, "sindri/dagger.log"))
+				if err != nil {
+					return err
+				}
+				defer daggerLog.Close()
+
+				dag, err := dagger.Connect(ctx,
+					daggerio.WithLogOutput(daggerLog),
+					daggerio.WithVerbosity(int(slogConfig.Level()/4)),
+				)
 				if err != nil {
 					return err
 				}
