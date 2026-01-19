@@ -3,7 +3,7 @@ module dagger/interface
 go 1.25.1
 
 require (
-	dagger.io/dagger v0.19.9
+	dagger.io/dagger v0.19.10
 	github.com/99designs/gqlgen v0.17.84
 	github.com/Khan/genqlient v0.8.1
 	github.com/vektah/gqlparser/v2 v2.5.31

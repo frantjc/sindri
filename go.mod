@@ -3,7 +3,7 @@ module github.com/frantjc/sindri
 go 1.25.1
 
 require (
-	dagger.io/dagger v0.19.9
+	dagger.io/dagger v0.19.10
 	github.com/adrg/xdg v0.5.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.0
 	github.com/cli/cli/v2 v2.83.2
