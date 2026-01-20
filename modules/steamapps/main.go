@@ -34,9 +34,6 @@ const (
 	owner = user + ":" + group
 	home  = "/home/" + user
 
-	defaultTag    = "public"
-	defaultBranch = "latest"
-
 	steamappDirectoryPath = home + "/.local/share/sindri/steamapp"
 	steamClientSoPath     = steamappDirectoryPath + "/linux64/steamclient.so"
 	steamClientSoLinkPath = "/usr/lib/x86_64-linux-gnu/steamclient.so"
