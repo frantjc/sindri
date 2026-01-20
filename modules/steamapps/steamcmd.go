@@ -74,6 +74,15 @@ func appUpdate(
 		return nil, nil, err
 	}
 
+	appInfoRequestArgs, err := steamcmd.Args(nil,
+		steamcmd.Login{},
+		steamcmd.AppInfoRequest(appID),
+		steamcmd.Quit,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	steamappDirectoryPath := "/out"
 
 	appUpdateArgs, err := steamcmd.Args(nil,
@@ -96,10 +105,19 @@ func appUpdate(
 		cache = fmt.Sprint(depot.TimeUpdated)
 	}
 
+	steamcmdAppInfoRequestExec := append([]string{"steamcmd"}, appInfoRequestArgs...)
 	steamcmdAppUpdateExec := append([]string{"steamcmd"}, appUpdateArgs...)
 
-	return steamcmdContainer().
+	container, err := steamcmdContainer().
 		WithEnvVariable("_SINDRI_CACHE", cache).
+		// NB: Try to avoid exit 8 from "Missing configuration" error.
+		WithExec(steamcmdAppInfoRequestExec).
+		// TODO(franjc): Why does this cache miss sometimes even though the previous exec hit?
 		WithExec(steamcmdAppUpdateExec).
-		Directory(steamappDirectoryPath), appInfo, nil
+		Sync(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return container.Directory(steamappDirectoryPath), appInfo, nil
 }

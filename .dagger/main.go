@@ -237,7 +237,7 @@ func (m *SindriDev) Test(
 	case "go-containerregistry":
 		return dag.Go(dagger.GoOpts{
 			Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-				Include: []string{"go.mod", "go.sum", "e2e/"},
+				Include: []string{"go.mod", "go.sum", "e2e/", "modules/interface/"},
 			}),
 		}).
 			Container().
