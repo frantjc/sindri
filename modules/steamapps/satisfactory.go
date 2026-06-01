@@ -17,7 +17,7 @@ const (
 	satisfactoryAppID = 1690800
 )
 
-func (m *Satisfactory) Container(
+func (m *Satisfactory) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"

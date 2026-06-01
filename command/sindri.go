@@ -13,11 +13,10 @@ import (
 	"path/filepath"
 	"time"
 
-	daggerio "dagger.io/dagger"
 	"github.com/adrg/xdg"
 	"github.com/frantjc/sindri"
-	"github.com/frantjc/sindri-module/dagger"
 	"github.com/frantjc/sindri/backend"
+	"github.com/frantjc/sindri/internal/dagger"
 	"github.com/frantjc/sindri/internal/logutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -75,13 +74,19 @@ func NewSindri(version string) *cobra.Command {
 				defer daggerLog.Close()
 
 				dag, err := dagger.Connect(ctx,
-					daggerio.WithLogOutput(daggerLog),
-					daggerio.WithVerbosity(int(slogConfig.Level()/4)),
+					dagger.WithLogOutput(daggerLog),
+					dagger.WithVerbosity(int(slogConfig.Level()/4)),
 				)
 				if err != nil {
 					return err
 				}
 				defer dag.Close()
+
+				if !cmd.Flag("backend").Changed {
+					if os.MkdirAll(cache, 0755); err != nil {
+						return err
+					}
+				}
 
 				b, err := backend.OpenBackend(ctx, storage)
 				if err != nil {

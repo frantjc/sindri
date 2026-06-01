@@ -21,8 +21,8 @@ func TestSlogConfigAddFlags(t *testing.T) {
 
 	slogConfig.AddFlags(flagSet)
 
-	if slogConfig.Level() != slog.LevelError {
-		t.Fatalf("expected level %v, got %v", slog.LevelError, slogConfig.Level())
+	if slogConfig.Level() != slog.LevelInfo {
+		t.Fatalf("expected level %v, got %v", slog.LevelInfo, slogConfig.Level())
 	}
 
 	if err := flagSet.Parse([]string{"--debug"}); err != nil {

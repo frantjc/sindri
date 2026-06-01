@@ -27,7 +27,7 @@ import (
 
 type Sindri struct{}
 
-func (m *Sindri) Container(ctx context.Context, name, reference string) (*dagger.Container, error) {
+func (m *Sindri) Image(ctx context.Context, name, reference string) (*dagger.Container, error) {
 	parts := strings.Split(name, "/")
 
 	if len(parts) > 2 {

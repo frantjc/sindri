@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
-	xslices "github.com/frantjc/x/slices"
 )
 
 type SindriDev struct {
@@ -27,42 +26,6 @@ func New(
 	return &SindriDev{
 		Source: src,
 	}, nil
-}
-
-func (m *SindriDev) Fmt(ctx context.Context) *dagger.Changeset {
-	goModules := []string{
-		".dagger/",
-		"modules/git/",
-		"modules/steamapps/",
-		"modules/wolfi/",
-	}
-
-	root := dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: goModules,
-		}),
-	}).
-		Container().
-		WithExec([]string{"go", "fmt", "./..."}).
-		Directory(".")
-
-	for _, module := range append(goModules, "modules/interface/") {
-		root = root.WithDirectory(
-			module,
-			dag.Go(dagger.GoOpts{
-				Module: m.Source.Directory(module).Filter(dagger.DirectoryFilterOpts{
-					Exclude: xslices.Filter(goModules, func(m string, _ int) bool {
-						return strings.HasPrefix(m, module)
-					}),
-				}),
-			}).
-				Container().
-				WithExec([]string{"go", "fmt", "./..."}).
-				Directory("."),
-		)
-	}
-
-	return root.Changes(m.Source)
 }
 
 const (
@@ -114,7 +77,7 @@ func (m *SindriDev) Container(
 
 	kubectl := dag.HTTP(
 		fmt.Sprintf(
-			"https://dl.k8s.io/release/v1.34.0/bin/linux/%s/kubectl",
+			"https://dl.k8s.io/release/v1.34.3/bin/linux/%s/kubectl",
 			platform,
 		),
 	)
@@ -153,9 +116,6 @@ func (m *SindriDev) Container(
 func (m *SindriDev) Service(
 	ctx context.Context,
 	// +optional
-	// +default="localhost"
-	hostname string,
-	// +optional
 	backend,
 	// +optional
 	module string,
@@ -187,71 +147,16 @@ func (m *SindriDev) Service(
 		}
 	}
 
-	keyPair := dag.TLS().Ca().KeyPair(hostname)
-	crtPath := home + "/.config/sindri/tls.crt"
-	keyPath := home + "/.config/sindri/tls.key"
-
 	return container.
-		WithFile(keyPath, keyPair.Key(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
-		WithFile(crtPath, keyPair.Crt(), dagger.ContainerWithFileOpts{Permissions: 0400, Owner: owner}).
 		WithExposedPort(5000).
 		AsService(dagger.ContainerAsServiceOpts{
 			ExperimentalPrivilegedNesting: true,
 			UseEntrypoint:                 true,
 			Args: []string{
 				"--backend", u.String(),
-				"--tls-key", keyPath,
-				"--tls-crt", crtPath,
 				"--debug",
 			},
 		}), nil
-}
-
-func (m *SindriDev) Test(
-	ctx context.Context,
-	// +optional
-	// +default=[
-	// "valheim",
-	// "corekeeper"
-	// ]
-	repository []string,
-	// +optional
-	// +default="go-containerregistry"
-	client,
-	// +optional
-	backend,
-	// +optional
-	module string,
-) (*dagger.Container, error) {
-	alias := "sindri.dagger.local"
-	hostname := fmt.Sprintf("%s:5000", alias)
-	caCrtPath := "/usr/share/ca-certificates/dagger.crt"
-
-	svc, err := m.Service(ctx, alias, backend, module)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO(frantjc): Test containerd client, and maybe others?
-	switch client {
-	case "go-containerregistry":
-		return dag.Go(dagger.GoOpts{
-			Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-				Include: []string{"go.mod", "go.sum", "e2e/", "modules/interface/"},
-			}),
-		}).
-			Container().
-			WithFile(caCrtPath, dag.TLS().Ca().Crt()).
-			WithExec([]string{
-				"sh", "-c", fmt.Sprintf(`cat "%s" >> "/etc/ssl/certs/ca-certificates.crt"`, caCrtPath),
-			}).
-			WithEnvVariable("SINDRI_TEST_REGISTRY", hostname).
-			WithEnvVariable("SINDRI_TEST_REPOSITORIES", strings.Join(repository, ",")).
-			WithServiceBinding(alias, svc).
-			WithExec([]string{"go", "test", "-race", "-cover", "-timeout", "30m", "./e2e/..."}), nil
-	}
-
-	return nil, fmt.Errorf("unknown client %s", client)
 }
 
 func (m *SindriDev) Version(ctx context.Context) string {
@@ -288,7 +193,7 @@ func (m *SindriDev) Tag(ctx context.Context) string {
 
 func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
+		Source: m.Source.Filter(dagger.DirectoryFilterOpts{
 			Exclude: []string{".github/", "e2e/"},
 		}),
 	}).
@@ -298,43 +203,19 @@ func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 		})
 }
 
-func (m *SindriDev) Vulncheck(ctx context.Context) (string, error) {
+// +check
+func (m *SindriDev) Test(ctx context.Context) error {
+	tags := []string{
+		"dagger",
+		// "git",
+		"steamapps",
+		// "wolfi",
+	}
 	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{
-				".dagger/",
-			},
-		}),
+		Source: m.Source,
 	}).
-		Container().
-		WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@v1.1.4"}).
-		WithExec([]string{"govulncheck", "./..."}).
-		CombinedOutput(ctx)
-}
-
-func (m *SindriDev) Vet(ctx context.Context) (string, error) {
-	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{
-				".dagger/",
-			},
-		}),
-	}).
-		Container().
-		WithExec([]string{"go", "vet", "./..."}).
-		CombinedOutput(ctx)
-}
-
-func (m *SindriDev) Staticcheck(ctx context.Context) (string, error) {
-	return dag.Go(dagger.GoOpts{
-		Module: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{
-				".dagger/",
-			},
-		}),
-	}).
-		Container().
-		WithExec([]string{"go", "install", "honnef.co/go/tools/cmd/staticcheck@v0.6.1"}).
-		WithExec([]string{"staticcheck", "./..."}).
-		CombinedOutput(ctx)
+		Test(ctx, dagger.GoTestOpts{
+			Race: true,
+			Tags: tags,
+		})
 }

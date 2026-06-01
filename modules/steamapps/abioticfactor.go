@@ -18,7 +18,7 @@ const (
 	abioticFactorAppID = 2857200
 )
 
-func (m *Abioticfactor) Container(
+func (m *Abioticfactor) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"

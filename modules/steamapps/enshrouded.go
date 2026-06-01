@@ -17,7 +17,7 @@ const (
 	enshroudedAppID = 2278520
 )
 
-func (m *Enshrouded) Container(
+func (m *Enshrouded) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"

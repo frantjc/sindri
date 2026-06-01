@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/frantjc/sindri-module/dagger"
 	"github.com/frantjc/sindri/backend"
+	"github.com/frantjc/sindri/internal/dagger"
 	"github.com/frantjc/sindri/internal/httputil"
 	"github.com/frantjc/sindri/internal/logutil"
 	"github.com/google/uuid"
@@ -84,8 +84,8 @@ func Handler(dag *dagger.Client, b backend.Backend) http.Handler {
 				var err error
 				if d, err = b.Store(
 					ctx,
-					dag.Sindri().
-						Container(name, reference),
+					// FIXME(frantjc): Hopefuly a temporary workaround for dag.Sindri() not being generated.
+					new(dagger.Sindri{}).WithGraphQLQuery(dag.QueryBuilder().Select("sindri")).Image(name, reference),
 					dag,
 					name,
 					reference,

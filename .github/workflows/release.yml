@@ -13,10 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: frantjc/actions/setup-tool@v1
+      - uses: jdx/mise-action@v4
         with:
-          repository: dagger/dagger
-          version: v0.19.10
+          install_args: dagger
       - shell: dagger {0}
         env:
           GITHUB_TOKEN: ${{ github.token }}

@@ -17,7 +17,7 @@ const (
 	astroneerAppID = 728470
 )
 
-func (m *Astroneer) Container(
+func (m *Astroneer) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"

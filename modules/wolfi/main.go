@@ -22,7 +22,7 @@ import (
 
 type Sindri struct{}
 
-func (m *Sindri) Container(name, reference string) *dagger.Container {
+func (m *Sindri) Image(name, reference string) *dagger.Container {
 	packages := strings.Split(name, "/")
 	slices.Sort(packages)
 	return dag.Wolfi().Container(dagger.WolfiContainerOpts{

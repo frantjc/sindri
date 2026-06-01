@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/frantjc/sindri-module/dagger"
+	"github.com/frantjc/sindri/internal/dagger"
 	"github.com/opencontainers/go-digest"
 )
 

@@ -18,7 +18,7 @@ const (
 	palworldAppID = 2394010
 )
 
-func (m *Palworld) Container(
+func (m *Palworld) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"

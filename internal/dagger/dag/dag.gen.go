@@ -7,9 +7,8 @@ import (
 	"os"
 	"sync"
 
-	dagger "dagger/interface/dagger"
-
 	dagClient "dagger.io/dagger"
+	dagger "github.com/frantjc/sindri/internal/dagger"
 )
 
 var client *dagger.Client
@@ -54,10 +53,21 @@ func Address(value string) *dagger.Address {
 	return client.Address(value)
 }
 
-// Constructs a cache volume for a given cache key.
-func CacheVolume(key string) *dagger.CacheVolume {
+func Binary() *dagger.File {
 	client := initClient()
-	return client.CacheVolume(key)
+	return client.Binary()
+}
+
+// Constructs a cache volume for a given cache key.
+func CacheVolume(key string, opts ...dagger.CacheVolumeOpts) *dagger.CacheVolume {
+	client := initClient()
+	return client.CacheVolume(key, opts...)
+}
+
+// Creates an empty changeset
+func Changeset() *dagger.Changeset {
+	client := initClient()
+	return client.Changeset()
 }
 
 // Dagger Cloud configuration and state
@@ -66,9 +76,6 @@ func Cloud() *dagger.Cloud {
 	return client.Cloud()
 }
 
-// Creates a scratch container, with no image or metadata.
-//
-// To pull an image, follow up with the "from" function.
 func Container(opts ...dagger.ContainerOpts) *dagger.Container {
 	client := initClient()
 	return client.Container(opts...)
@@ -101,9 +108,17 @@ func CurrentModule() *dagger.CurrentModule {
 }
 
 // The TypeDef representations of the objects currently being served in the session.
-func CurrentTypeDefs(ctx context.Context) ([]dagger.TypeDef, error) {
+func CurrentTypeDefs(ctx context.Context, opts ...dagger.CurrentTypeDefsOpts) ([]dagger.TypeDef, error) {
 	client := initClient()
-	return client.CurrentTypeDefs(ctx)
+	return client.CurrentTypeDefs(ctx, opts...)
+}
+
+// Detect and return the current workspace.
+//
+// Experimental: Highly experimental API extracted from a more ambitious workspace implementation.
+func CurrentWorkspace() *dagger.Workspace {
+	client := initClient()
+	return client.CurrentWorkspace()
 }
 
 // The default platform of the engine.
@@ -116,6 +131,12 @@ func DefaultPlatform(ctx context.Context) (dagger.Platform, error) {
 func Directory() *dagger.Directory {
 	client := initClient()
 	return client.Directory()
+}
+
+// The Dagger engine container configuration and state
+func Engine() *dagger.Engine {
+	client := initClient()
+	return client.Engine()
 }
 
 // Initializes a new environment
@@ -162,6 +183,12 @@ func Git(url string, opts ...dagger.GitOpts) *dagger.GitRepository {
 	return client.Git(url, opts...)
 }
 
+// A generated module for Go functions
+func Go(opts ...dagger.GoOpts) *dagger.Go {
+	client := initClient()
+	return client.Go(opts...)
+}
+
 // Queries the host environment.
 func Host() *dagger.Host {
 	client := initClient()
@@ -172,6 +199,12 @@ func Host() *dagger.Host {
 func HTTP(url string, opts ...dagger.HTTPOpts) *dagger.File {
 	client := initClient()
 	return client.HTTP(url, opts...)
+}
+
+// A unique identifier for this Query.
+func ID(ctx context.Context) (dagger.ID, error) {
+	client := initClient()
+	return client.ID(ctx)
 }
 
 // Initialize a JSON value
@@ -224,6 +257,12 @@ func LoadCheckGroupFromID(id dagger.CheckGroupID) *dagger.CheckGroup {
 	return client.LoadCheckGroupFromID(id)
 }
 
+// Load a ClientFilesyncMirror from its ID.
+func LoadClientFilesyncMirrorFromID(id dagger.ClientFilesyncMirrorID) *dagger.ClientFilesyncMirror {
+	client := initClient()
+	return client.LoadClientFilesyncMirrorFromID(id)
+}
+
 // Load a Cloud from its ID.
 func LoadCloudFromID(id dagger.CloudID) *dagger.Cloud {
 	client := initClient()
@@ -242,10 +281,40 @@ func LoadCurrentModuleFromID(id dagger.CurrentModuleID) *dagger.CurrentModule {
 	return client.LoadCurrentModuleFromID(id)
 }
 
+// Load a DiffStat from its ID.
+func LoadDiffStatFromID(id dagger.DiffStatID) *dagger.DiffStat {
+	client := initClient()
+	return client.LoadDiffStatFromID(id)
+}
+
 // Load a Directory from its ID.
 func LoadDirectoryFromID(id dagger.DirectoryID) *dagger.Directory {
 	client := initClient()
 	return client.LoadDirectoryFromID(id)
+}
+
+// Load a EngineCacheEntry from its ID.
+func LoadEngineCacheEntryFromID(id dagger.EngineCacheEntryID) *dagger.EngineCacheEntry {
+	client := initClient()
+	return client.LoadEngineCacheEntryFromID(id)
+}
+
+// Load a EngineCacheEntrySet from its ID.
+func LoadEngineCacheEntrySetFromID(id dagger.EngineCacheEntrySetID) *dagger.EngineCacheEntrySet {
+	client := initClient()
+	return client.LoadEngineCacheEntrySetFromID(id)
+}
+
+// Load a EngineCache from its ID.
+func LoadEngineCacheFromID(id dagger.EngineCacheID) *dagger.EngineCache {
+	client := initClient()
+	return client.LoadEngineCacheFromID(id)
+}
+
+// Load a Engine from its ID.
+func LoadEngineFromID(id dagger.EngineID) *dagger.Engine {
+	client := initClient()
+	return client.LoadEngineFromID(id)
 }
 
 // Load a EnumTypeDef from its ID.
@@ -290,6 +359,12 @@ func LoadErrorValueFromID(id dagger.ErrorValueID) *dagger.ErrorValue {
 	return client.LoadErrorValueFromID(id)
 }
 
+// Load a Exportable from its ID.
+func LoadExportableFromID(id dagger.ExportableID) dagger.Exportable {
+	client := initClient()
+	return client.LoadExportableFromID(id)
+}
+
 // Load a FieldTypeDef from its ID.
 func LoadFieldTypeDefFromID(id dagger.FieldTypeDefID) *dagger.FieldTypeDef {
 	client := initClient()
@@ -332,6 +407,18 @@ func LoadGeneratedCodeFromID(id dagger.GeneratedCodeID) *dagger.GeneratedCode {
 	return client.LoadGeneratedCodeFromID(id)
 }
 
+// Load a Generator from its ID.
+func LoadGeneratorFromID(id dagger.GeneratorID) *dagger.Generator {
+	client := initClient()
+	return client.LoadGeneratorFromID(id)
+}
+
+// Load a GeneratorGroup from its ID.
+func LoadGeneratorGroupFromID(id dagger.GeneratorGroupID) *dagger.GeneratorGroup {
+	client := initClient()
+	return client.LoadGeneratorGroupFromID(id)
+}
+
 // Load a GitRef from its ID.
 func LoadGitRefFromID(id dagger.GitRefID) *dagger.GitRef {
 	client := initClient()
@@ -342,6 +429,24 @@ func LoadGitRefFromID(id dagger.GitRefID) *dagger.GitRef {
 func LoadGitRepositoryFromID(id dagger.GitRepositoryID) *dagger.GitRepository {
 	client := initClient()
 	return client.LoadGitRepositoryFromID(id)
+}
+
+// Load a Go from its ID.
+func LoadGoFromID(id dagger.GoID) *dagger.Go {
+	client := initClient()
+	return client.LoadGoFromID(id)
+}
+
+// Load a HTTPState from its ID.
+func LoadHTTPStateFromID(id dagger.HTTPStateID) *dagger.HTTPState {
+	client := initClient()
+	return client.LoadHTTPStateFromID(id)
+}
+
+// Load a HealthcheckConfig from its ID.
+func LoadHealthcheckConfigFromID(id dagger.HealthcheckConfigID) *dagger.HealthcheckConfig {
+	client := initClient()
+	return client.LoadHealthcheckConfigFromID(id)
 }
 
 // Load a Host from its ID.
@@ -392,6 +497,12 @@ func LoadListTypeDefFromID(id dagger.ListTypeDefID) *dagger.ListTypeDef {
 	return client.LoadListTypeDefFromID(id)
 }
 
+// Load a Mise from its ID.
+func LoadMiseFromID(id dagger.MiseID) *dagger.Mise {
+	client := initClient()
+	return client.LoadMiseFromID(id)
+}
+
 // Load a ModuleConfigClient from its ID.
 func LoadModuleConfigClientFromID(id dagger.ModuleConfigClientID) *dagger.ModuleConfigClient {
 	client := initClient()
@@ -420,6 +531,12 @@ func LoadObjectTypeDefFromID(id dagger.ObjectTypeDefID) *dagger.ObjectTypeDef {
 func LoadPortFromID(id dagger.PortID) *dagger.Port {
 	client := initClient()
 	return client.LoadPortFromID(id)
+}
+
+// Load a RemoteGitMirror from its ID.
+func LoadRemoteGitMirrorFromID(id dagger.RemoteGitMirrorID) *dagger.RemoteGitMirror {
+	client := initClient()
+	return client.LoadRemoteGitMirrorFromID(id)
 }
 
 // Load a SDKConfig from its ID.
@@ -458,6 +575,12 @@ func LoadServiceFromID(id dagger.ServiceID) *dagger.Service {
 	return client.LoadServiceFromID(id)
 }
 
+// Load a SindriDev from its ID.
+func LoadSindriDevFromID(id dagger.SindriDevID) *dagger.SindriDev {
+	client := initClient()
+	return client.LoadSindriDevFromID(id)
+}
+
 // Load a Sindri from its ID.
 func LoadSindriFromID(id dagger.SindriID) *dagger.Sindri {
 	client := initClient()
@@ -482,6 +605,12 @@ func LoadStatFromID(id dagger.StatID) *dagger.Stat {
 	return client.LoadStatFromID(id)
 }
 
+// Load a Syncer from its ID.
+func LoadSyncerFromID(id dagger.SyncerID) dagger.Syncer {
+	client := initClient()
+	return client.LoadSyncerFromID(id)
+}
+
 // Load a Terminal from its ID.
 func LoadTerminalFromID(id dagger.TerminalID) *dagger.Terminal {
 	client := initClient()
@@ -492,6 +621,35 @@ func LoadTerminalFromID(id dagger.TerminalID) *dagger.Terminal {
 func LoadTypeDefFromID(id dagger.TypeDefID) *dagger.TypeDef {
 	client := initClient()
 	return client.LoadTypeDefFromID(id)
+}
+
+// Load a Up from its ID.
+func LoadUpFromID(id dagger.UpID) *dagger.Up {
+	client := initClient()
+	return client.LoadUpFromID(id)
+}
+
+// Load a UpGroup from its ID.
+func LoadUpGroupFromID(id dagger.UpGroupID) *dagger.UpGroup {
+	client := initClient()
+	return client.LoadUpGroupFromID(id)
+}
+
+// Load a Wolfi from its ID.
+func LoadWolfiFromID(id dagger.WolfiID) *dagger.Wolfi {
+	client := initClient()
+	return client.LoadWolfiFromID(id)
+}
+
+// Load a Workspace from its ID.
+func LoadWorkspaceFromID(id dagger.WorkspaceID) *dagger.Workspace {
+	client := initClient()
+	return client.LoadWorkspaceFromID(id)
+}
+
+func Mise(opts ...dagger.MiseOpts) *dagger.Mise {
+	client := initClient()
+	return client.Mise(opts...)
 }
 
 // Create a new module.
@@ -506,10 +664,21 @@ func ModuleSource(refString string, opts ...dagger.ModuleSourceOpts) *dagger.Mod
 	return client.ModuleSource(refString, opts...)
 }
 
+// Load any object by its ID.
+func Node(id dagger.ID) dagger.Node {
+	client := initClient()
+	return client.Node(id)
+}
+
 // Creates a new secret.
 func Secret(uri string, opts ...dagger.SecretOpts) *dagger.Secret {
 	client := initClient()
 	return client.Secret(uri, opts...)
+}
+
+func Service(opts ...dagger.ServiceOpts) *dagger.Service {
+	client := initClient()
+	return client.Service(opts...)
 }
 
 // Sets a secret given a user defined name to its plaintext and returns the secret.
@@ -520,9 +689,15 @@ func SetSecret(name string, plaintext string) *dagger.Secret {
 	return client.SetSecret(name, plaintext)
 }
 
+// The interface that a Dagger module must implement to work with Sindri.
 func Sindri() *dagger.Sindri {
 	client := initClient()
 	return client.Sindri()
+}
+
+func Source() *dagger.Directory {
+	client := initClient()
+	return client.Source()
 }
 
 // Creates source map metadata.
@@ -531,14 +706,35 @@ func SourceMap(filename string, line int, column int) *dagger.SourceMap {
 	return client.SourceMap(filename, line, column)
 }
 
+func Tag(ctx context.Context) (string, error) {
+	client := initClient()
+	return client.Tag(ctx)
+}
+
+func Test(ctx context.Context) error {
+	client := initClient()
+	return client.Test(ctx)
+}
+
 // Create a new TypeDef.
 func TypeDef() *dagger.TypeDef {
 	client := initClient()
 	return client.TypeDef()
 }
 
-// Get the current Dagger Engine version.
 func Version(ctx context.Context) (string, error) {
 	client := initClient()
 	return client.Version(ctx)
+}
+
+// Configure the sindri-dev constructor arguments.
+func With(opts ...dagger.WithOpts) *dagger.Query {
+	client := initClient()
+	return client.With(opts...)
+}
+
+// A Wolfi Linux configuration
+func Wolfi() *dagger.Wolfi {
+	client := initClient()
+	return client.Wolfi()
 }

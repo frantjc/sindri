@@ -16,7 +16,7 @@ const (
 	valheimAppID = 896660
 )
 
-func (m *Valheim) Container(
+func (m *Valheim) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"
@@ -52,7 +52,7 @@ func (m *Valheim) Container(
 		WithExec([]string{
 			"ln", "-s",
 			steamClientSoPath,
-			steamClientSoLinkPath,
+			"/usr/lib/steamclient.so",
 		}).
 		WithUser(user).
 		WithWorkdir(steamappDirectoryPath).

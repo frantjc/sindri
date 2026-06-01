@@ -16,7 +16,7 @@ const (
 	coreKeeperAppID = 1963720
 )
 
-func (m *Corekeeper) Container(
+func (m *Corekeeper) Image(
 	ctx context.Context,
 	// +optional
 	// +default="public"
@@ -51,7 +51,7 @@ func (m *Corekeeper) Container(
 		WithExec([]string{
 			"ln", "-s",
 			steamClientSoPath,
-			steamClientSoLinkPath,
+			"/usr/lib/x86_64-linux-gnu/steamclient.so",
 		}).
 		WithUser(user).
 		WithWorkdir(steamappDirectoryPath).

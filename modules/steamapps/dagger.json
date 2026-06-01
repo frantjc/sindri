@@ -1,15 +1,14 @@
 {
   "name": "sindri",
-  "engineVersion": "v0.19.10",
+  "engineVersion": "v0.21.3",
   "sdk": {
     "source": "go"
   },
   "dependencies": [
     {
       "name": "wolfi",
-      "source": "github.com/dagger/dagger/modules/wolfi@v0.19.10",
-      "pin": "b1dbdabe70d9907b51c1bce48726aea36783ffbb"
+      "source": "github.com/dagger/dagger/modules/wolfi@v0.21.3",
+      "pin": "0ec84486003f052214339a2f8bdcd5761f23cead"
     }
-  ],
-  "disableDefaultFunctionCaching": true
+  ]
 }

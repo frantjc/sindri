@@ -36,7 +36,6 @@ const (
 
 	steamappDirectoryPath = home + "/.local/share/sindri/steamapp"
 	steamClientSoPath     = steamappDirectoryPath + "/linux64/steamclient.so"
-	steamClientSoLinkPath = "/usr/lib/x86_64-linux-gnu/steamclient.so"
 )
 
 var (
@@ -74,26 +73,26 @@ func getLaunch(appInfo *steamcmd.AppInfo, f appInfoLaunchConfigFilter) (*steamcm
 	return nil, false
 }
 
-func (m *Sindri) Container(ctx context.Context, name, reference string) (*dagger.Container, error) {
+func (m *Sindri) Image(ctx context.Context, name, reference string) (*dagger.Container, error) {
 	if reference == "latest" {
 		reference = "public"
 	}
 
 	switch name {
 	case "abioticfactor":
-		return new(Abioticfactor).Container(ctx, reference)
+		return new(Abioticfactor).Image(ctx, reference)
 	case "astroneer":
-		return new(Astroneer).Container(ctx, reference)
+		return new(Astroneer).Image(ctx, reference)
 	case "corekeeper":
-		return new(Corekeeper).Container(ctx, reference)
+		return new(Corekeeper).Image(ctx, reference)
 	case "enshrouded":
-		return new(Enshrouded).Container(ctx, reference)
+		return new(Enshrouded).Image(ctx, reference)
 	case "palworld":
-		return new(Palworld).Container(ctx, reference)
+		return new(Palworld).Image(ctx, reference)
 	case "satisfactory":
-		return new(Satisfactory).Container(ctx, reference)
+		return new(Satisfactory).Image(ctx, reference)
 	case "valheim":
-		return new(Valheim).Container(ctx, reference)
+		return new(Valheim).Image(ctx, reference)
 	}
 
 	// TODO(frantjc): Maybe try to handle the generic case?

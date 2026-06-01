@@ -14,6 +14,6 @@ import (
 
 type Sindri struct{}
 
-func (m *Sindri) Container(name, reference string) *dagger.Container {
+func (m *Sindri) Image(name, reference string) *dagger.Container {
 	return dag.Container()
 }
