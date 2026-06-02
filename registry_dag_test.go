@@ -50,12 +50,13 @@ func Registry(t testing.TB, dag *dagger.Client, module string) string {
 			Module: module,
 		}).
 		Start(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, svc)
 	t.Cleanup(func() {
 		ctx := context.WithoutCancel(ctx)
 		_, err = svc.Stop(ctx)
 		require.NoError(t, err)
 	})
-	require.NoError(t, err)
 	ep, err := svc.Endpoint(ctx)
 	require.NoError(t, err)
 	return ep
