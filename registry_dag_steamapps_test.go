@@ -24,6 +24,9 @@ func TestModuleSteamappsPullCorekeeper(t *testing.T) {
 }
 
 func TestModuleSteamappsPullSatisfactory(t *testing.T) {
+	if true {
+		t.Skip("skipping to avoid GitHub Actions disk size limitations")
+	}
 	ctx := t.Context()
 	dag := Dag(t)
 	registry := Registry(t, dag, "steamapps")
@@ -36,6 +39,9 @@ func TestModuleSteamappsPullSatisfactory(t *testing.T) {
 }
 
 func TestModuleSteamappsPullValheim(t *testing.T) {
+	if true {
+		t.Skip("skipping to avoid GitHub Actions disk size limitations")
+	}
 	ctx := t.Context()
 	dag := Dag(t)
 	registry := Registry(t, dag, "steamapps")

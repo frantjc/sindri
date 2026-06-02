@@ -207,9 +207,9 @@ func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
 func (m *SindriDev) Test(ctx context.Context) error {
 	tags := []string{
 		"dagger",
-		// "git",
+		"git",
 		"steamapps",
-		// "wolfi",
+		"wolfi",
 	}
 	return dag.Go(dagger.GoOpts{
 		Source: m.Source,
