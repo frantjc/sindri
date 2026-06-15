@@ -1,8 +1,11 @@
 {
   "name": "sindri-dev",
-  "engineVersion": "v0.21.3",
+  "engineVersion": "v0.21.6",
   "sdk": {
-    "source": "go"
+    "source": "go",
+    "experimental": {
+      "SELF_CALLS": true
+    }
   },
   "toolchains": [
     {
@@ -16,8 +19,14 @@
   ],
   "dependencies": [
     {
-      "name": "sindri",
-      "source": "modules/interface"
+      "name": "arch",
+      "source": "github.com/frantjc/daggerverse/arch@main",
+      "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"
+    },
+    {
+      "name": "archive",
+      "source": "github.com/frantjc/daggerverse/archive@main",
+      "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"
     },
     {
       "name": "mise",
@@ -25,9 +34,13 @@
       "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"
     },
     {
+      "name": "sindri",
+      "source": "modules/interface"
+    },
+    {
       "name": "wolfi",
-      "source": "github.com/dagger/dagger/modules/wolfi@v0.21.3",
-      "pin": "0ec84486003f052214339a2f8bdcd5761f23cead"
+      "source": "github.com/dagger/dagger/modules/wolfi@v0.21.6",
+      "pin": "76c1bf81f55b7cd7dcc5b83ee5a04caf1ffb98ad"
     }
   ],
   "source": ".dagger",

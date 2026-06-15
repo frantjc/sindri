@@ -53,6 +53,16 @@ func Address(value string) *dagger.Address {
 	return client.Address(value)
 }
 
+func Arch() *dagger.Arch {
+	client := initClient()
+	return client.Arch()
+}
+
+func Archive(opts ...dagger.ArchiveOpts) *dagger.Archive {
+	client := initClient()
+	return client.Archive(opts...)
+}
+
 func Binary() *dagger.File {
 	client := initClient()
 	return client.Binary()
@@ -225,6 +235,18 @@ func LLM(opts ...dagger.LLMOpts) *dagger.LLM {
 func LoadAddressFromID(id dagger.AddressID) *dagger.Address {
 	client := initClient()
 	return client.LoadAddressFromID(id)
+}
+
+// Load a Arch from its ID.
+func LoadArchFromID(id dagger.ArchID) *dagger.Arch {
+	client := initClient()
+	return client.LoadArchFromID(id)
+}
+
+// Load a Archive from its ID.
+func LoadArchiveFromID(id dagger.ArchiveID) *dagger.Archive {
+	client := initClient()
+	return client.LoadArchiveFromID(id)
 }
 
 // Load a Binding from its ID.

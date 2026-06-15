@@ -29,7 +29,7 @@ require (
 	cloud.google.com/go/iam v1.5.3 // indirect
 	cloud.google.com/go/monitoring v1.24.3 // indirect
 	cloud.google.com/go/storage v1.57.1 // indirect
-	dagger.io/dagger v0.21.3 // indirect
+	dagger.io/dagger v0.21.6 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/99designs/gqlgen v0.17.89 // indirect
 	github.com/AlecAivazis/survey/v2 v2.3.7 // indirect

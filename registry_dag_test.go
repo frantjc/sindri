@@ -16,6 +16,7 @@ import (
 func WithProgress(t testing.TB) remote.Option {
 	ctx := t.Context()
 	updates := make(chan v1.Update)
+	w := t.Output()
 	go func() {
 		for {
 			select {
@@ -24,7 +25,8 @@ func WithProgress(t testing.TB) remote.Option {
 				return
 			case update := <-updates:
 				require.NoError(t, update.Error)
-				fmt.Fprintf(t.Output(), "%d/%d", update.Complete, update.Total)
+				_, err := fmt.Fprintf(w, "%d/%d", update.Complete, update.Total)
+				require.NoError(t, err)
 			}
 		}
 	}()
@@ -43,7 +45,7 @@ func Dag(t testing.TB) *dagger.Client {
 
 func Registry(t testing.TB, dag *dagger.Client, module string) string {
 	ctx := t.Context()
-	// FIXME(frantjc): Hopefuly a temporary workaround for dag.Sindri() not being generated.
+	// FIXME(frantjc): Hopefuly a temporary workaround for dag.SindriDev() not being generated.
 	svc, err := new(dagger.SindriDev).
 		WithGraphQLQuery(dag.QueryBuilder().Select("sindriDev")).
 		Service(dagger.SindriDevServiceOpts{

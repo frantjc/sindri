@@ -21,10 +21,10 @@ func New(
 	ctx context.Context,
 	// +optional
 	// +defaultPath="."
-	src *dagger.Directory,
+	source *dagger.Directory,
 ) (*SindriDev, error) {
 	return &SindriDev{
-		Source: src,
+		Source: source,
 	}, nil
 }
 
@@ -39,6 +39,7 @@ const (
 	defaultModule  = "steamapps"
 )
 
+// +check
 func (m *SindriDev) Container(
 	ctx context.Context,
 	// +optional
@@ -53,32 +54,22 @@ func (m *SindriDev) Container(
 		return nil, err
 	}
 
-	osPlatformVersion, err := dag.DefaultPlatform(ctx)
+	arch, err := dag.Arch().Oci(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	parts := strings.Split(string(osPlatformVersion), "/")
-	if len(parts) < 2 {
-		return nil, fmt.Errorf("invalid dagger platform %s", osPlatformVersion)
-	}
-
-	platform := parts[1]
-
 	daggerTgz := dag.HTTP(
 		fmt.Sprintf(
 			"https://github.com/dagger/dagger/releases/download/%s/dagger_%s_linux_%s.tar.gz",
-			version, version, platform,
+			version, version, arch,
 		),
 	)
-
-	tmpDaggerTgzPath := "/tmp/dagger.tgz"
-	tmpDaggerPath := "/tmp/dagger"
 
 	kubectl := dag.HTTP(
 		fmt.Sprintf(
 			"https://dl.k8s.io/release/v1.34.3/bin/linux/%s/kubectl",
-			platform,
+			arch,
 		),
 	)
 
@@ -88,18 +79,12 @@ func (m *SindriDev) Container(
 		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithEnvVariable("PATH", home+"/.local/bin:$PATH", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithFile(
-			home+"/.local/bin/sindri", m.Binary(ctx),
+			home+"/.local/bin/sindri", dag.SindriDev(dagger.SindriDevOpts{Source: m.Source}).Binary(),
 			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700}).
 		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", home+"/.local/bin/dagger").
 		WithFile(
 			"$_EXPERIMENTAL_DAGGER_CLI_BIN",
-			dag.Wolfi().
-				Container().
-				WithFile(tmpDaggerTgzPath, daggerTgz).
-				WithExec([]string{
-					"tar", "-xzf", tmpDaggerTgzPath, "-C", path.Dir(tmpDaggerPath), path.Base(tmpDaggerPath),
-				}).
-				File(tmpDaggerPath),
+			dag.Archive().Untar(daggerTgz).File("dagger"),
 			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700},
 		).
 		WithFile(

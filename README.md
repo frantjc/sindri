@@ -28,7 +28,7 @@ docker run --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri --debug
 Then start pulling container images from Sindri:
 
 ```sh
-docker pull --tls-verify=false localhost:5000/corekeeper
+docker pull localhost:5000/corekeeper
 ```
 
 #### wolfi
@@ -42,7 +42,7 @@ docker run --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri:wolfi --debu
 Then start pulling container images from Sindri:
 
 ```sh
-docker pull --tls-verify=false localhost:5000/go-1.25
+docker pull localhost:5000/go-1.25
 ```
 
 #### git
@@ -56,7 +56,7 @@ docker run --publish 5000:5000 --detach --rm ghcr.io/frantjc/sindri:git --debug
 Then start pulling container images from Sindri:
 
 ```sh
-docker pull --tls-verify=false localhost:5000/github.com/frantjc/sindri/testdata
+docker pull localhost:5000/github.com/frantjc/sindri/testdata
 ```
 
 #### bring your own
@@ -70,7 +70,7 @@ docker run --volume `pwd`:/home/sindri/.config/sindri/module --publish 5000:5000
 Then start pulling container images built by your module from Sindri:
 
 ```sh
-docker pull --tls-verify=false localhost:5000/<name>:<reference>
+docker pull localhost:5000/<name>:<reference>
 ```
 
 ### storage

@@ -141,6 +141,12 @@ func (e *ExecError) Unwrap() error {
 type AddressID string
 
 // A unique identifier for an object.
+type ArchID string
+
+// A unique identifier for an object.
+type ArchiveID string
+
+// A unique identifier for an object.
 type BindingID string
 
 // A unique identifier for an object.
@@ -2003,7 +2009,7 @@ func (r *Container) Entrypoint(ctx context.Context) ([]string, error) {
 	return response, q.Execute(ctx)
 }
 
-// Retrieves the value of the specified environment variable.
+// Retrieves the value of the specified persistent environment variable.
 func (r *Container) EnvVariable(ctx context.Context, name string) (string, error) {
 	if r.envVariable != nil {
 		return *r.envVariable, nil
@@ -2017,7 +2023,7 @@ func (r *Container) EnvVariable(ctx context.Context, name string) (string, error
 	return response, q.Execute(ctx)
 }
 
-// Retrieves the list of environment variables passed to commands.
+// Retrieves the list of persistent environment variables configured on the container.
 func (r *Container) EnvVariables(ctx context.Context) ([]EnvVariable, error) {
 	q := r.query.Select("envVariables")
 
@@ -2056,6 +2062,8 @@ type ContainerExistsOpts struct {
 	ExpectedType ExistsType
 	// If specified, do not follow symlinks.
 	DoNotFollowSymlinks bool
+	// Replace "${VAR}" or "$VAR" in the value of path according to the current environment variables defined in the container (e.g. "/$VAR/foo").
+	Expand bool
 }
 
 // check if a file or directory exists
@@ -2072,6 +2080,10 @@ func (r *Container) Exists(ctx context.Context, path string, opts ...ContainerEx
 		// `doNotFollowSymlinks` optional argument
 		if !querybuilder.IsZeroValue(opts[i].DoNotFollowSymlinks) {
 			q = q.Arg("doNotFollowSymlinks", opts[i].DoNotFollowSymlinks)
+		}
+		// `expand` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Expand) {
+			q = q.Arg("expand", opts[i].Expand)
 		}
 	}
 	q = q.Arg("path", path)
@@ -2280,9 +2292,23 @@ func (r *Container) File(path string, opts ...ContainerFileOpts) *File {
 	}
 }
 
+// ContainerFromOpts contains options for Container.From
+type ContainerFromOpts struct {
+	// Service to use as the registry endpoint for the image address.
+	//
+	// The service will be started only for this pull.
+	RegistryService *Service
+}
+
 // Download a container image, and apply it to the container state. All previous state will be lost.
-func (r *Container) From(address string) *Container {
+func (r *Container) From(address string, opts ...ContainerFromOpts) *Container {
 	q := r.query.Select("from")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `registryService` optional argument
+		if !querybuilder.IsZeroValue(opts[i].RegistryService) {
+			q = q.Arg("registryService", opts[i].RegistryService)
+		}
+	}
 	q = q.Arg("address", address)
 
 	return &Container{
@@ -2452,6 +2478,10 @@ type ContainerPublishOpts struct {
 	//
 	// Default: OCIMediaTypes
 	MediaTypes ImageMediaTypes
+	// Service to use as the registry endpoint for the image address.
+	//
+	// The service will be started only for this push.
+	RegistryService *Service
 }
 
 // Package the container state as an OCI image, and publish it to a registry
@@ -2474,6 +2504,10 @@ func (r *Container) Publish(ctx context.Context, address string, opts ...Contain
 		// `mediaTypes` optional argument
 		if !querybuilder.IsZeroValue(opts[i].MediaTypes) {
 			q = q.Arg("mediaTypes", opts[i].MediaTypes)
+		}
+		// `registryService` optional argument
+		if !querybuilder.IsZeroValue(opts[i].RegistryService) {
+			q = q.Arg("registryService", opts[i].RegistryService)
 		}
 	}
 	q = q.Arg("address", address)
@@ -3475,6 +3509,19 @@ func (r *Container) WithUser(name string) *Container {
 	}
 }
 
+// Set a new non-secret environment variable for future execs without invalidating exec cache when only its value changes.
+//
+// This is an expert-only escape hatch. If a volatile value affects observable exec results, stale cached results may be reused.
+func (r *Container) WithVolatileVariable(name string, value string) *Container {
+	q := r.query.Select("withVolatileVariable")
+	q = q.Arg("name", name)
+	q = q.Arg("value", value)
+
+	return &Container{
+		query: q,
+	}
+}
+
 // ContainerWithWorkdirOpts contains options for Container.WithWorkdir
 type ContainerWithWorkdirOpts struct {
 	// Replace "${VAR}" or "$VAR" in the value of path according to the current environment variables defined in the container (e.g. "/$VAR/foo").
@@ -3725,6 +3772,16 @@ func (r *Container) WithoutUnixSocket(path string, opts ...ContainerWithoutUnixS
 // Should default to root.
 func (r *Container) WithoutUser() *Container {
 	q := r.query.Select("withoutUser")
+
+	return &Container{
+		query: q,
+	}
+}
+
+// Retrieves this container minus the given volatile environment variable.
+func (r *Container) WithoutVolatileVariable(name string) *Container {
+	q := r.query.Select("withoutVolatileVariable")
+	q = q.Arg("name", name)
 
 	return &Container{
 		query: q,
@@ -13146,6 +13203,26 @@ func (r *Query) LoadAddressFromID(id AddressID) *Address {
 	}
 }
 
+// Load a Arch from its ID.
+func (r *Query) LoadArchFromID(id ArchID) *Arch {
+	q := r.query.Select("loadArchFromID")
+	q = q.Arg("id", id)
+
+	return &Arch{
+		query: q,
+	}
+}
+
+// Load a Archive from its ID.
+func (r *Query) LoadArchiveFromID(id ArchiveID) *Archive {
+	q := r.query.Select("loadArchiveFromID")
+	q = q.Arg("id", id)
+
+	return &Archive{
+		query: q,
+	}
+}
+
 // Load a Binding from its ID.
 func (r *Query) LoadBindingFromID(id BindingID) *Binding {
 	q := r.query.Select("loadBindingFromID")
@@ -13972,16 +14049,16 @@ func (r *Query) TypeDef() *TypeDef {
 
 // WithOpts contains options for Query.With
 type WithOpts struct {
-	Src *Directory // sindri-dev (../../.dagger/main.go:24:2)
+	Source *Directory // sindri-dev (../../.dagger/main.go:24:2)
 }
 
 // Configure the sindri-dev constructor arguments.
 func (r *Query) With(opts ...WithOpts) *Query {
 	q := r.query.Select("with")
 	for i := len(opts) - 1; i >= 0; i-- {
-		// `src` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Src) {
-			q = q.Arg("src", opts[i].Src)
+		// `source` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Source) {
+			q = q.Arg("source", opts[i].Source)
 		}
 	}
 
@@ -15991,6 +16068,8 @@ type WorkspaceChecksOpts struct {
 	Include []string
 	// When true, only return annotated check functions; exclude generate-as-checks
 	NoGenerate bool
+	// When true, only return generate-as-checks; exclude annotated check functions
+	OnlyGenerate bool
 }
 
 // Return all checks from modules loaded in the workspace.
@@ -16004,6 +16083,10 @@ func (r *Workspace) Checks(opts ...WorkspaceChecksOpts) *CheckGroup {
 		// `noGenerate` optional argument
 		if !querybuilder.IsZeroValue(opts[i].NoGenerate) {
 			q = q.Arg("noGenerate", opts[i].NoGenerate)
+		}
+		// `onlyGenerate` optional argument
+		if !querybuilder.IsZeroValue(opts[i].OnlyGenerate) {
+			q = q.Arg("onlyGenerate", opts[i].OnlyGenerate)
 		}
 	}
 
@@ -17667,6 +17750,26 @@ func (c *Client) Do(ctx context.Context, req *Request, resp *Response) error {
 // Remote dependencies are generated by the client generator.
 func serveModuleDependencies(ctx context.Context, client *Client) error {
 	if err := client.ModuleSource(
+		"github.com/frantjc/daggerverse/arch@main",
+		ModuleSourceOpts{RefPin: "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"},
+	).
+		WithName("arch").
+		AsModule().
+		Serve(ctx); err != nil {
+		return err
+	}
+
+	if err := client.ModuleSource(
+		"github.com/frantjc/daggerverse/archive@main",
+		ModuleSourceOpts{RefPin: "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"},
+	).
+		WithName("archive").
+		AsModule().
+		Serve(ctx); err != nil {
+		return err
+	}
+
+	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/mise@main",
 		ModuleSourceOpts{RefPin: "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"},
 	).
@@ -17677,8 +17780,8 @@ func serveModuleDependencies(ctx context.Context, client *Client) error {
 	}
 
 	if err := client.ModuleSource(
-		"github.com/dagger/dagger/modules/wolfi@v0.21.3",
-		ModuleSourceOpts{RefPin: "0ec84486003f052214339a2f8bdcd5761f23cead"},
+		"github.com/dagger/dagger/modules/wolfi@v0.21.6",
+		ModuleSourceOpts{RefPin: "76c1bf81f55b7cd7dcc5b83ee5a04caf1ffb98ad"},
 	).
 		WithName("wolfi").
 		AsModule().

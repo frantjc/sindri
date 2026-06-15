@@ -42,7 +42,7 @@ func (r *Env) WithSindriDevOutput(name string, description string) *Env { // sin
 	}
 }
 
-func (r *Query) Binary() *File { // sindri-dev (../../.dagger/main.go:194:1)
+func (r *Query) Binary() *File { // sindri-dev (../../.dagger/main.go:185:1)
 	q := r.query.Select("binary")
 
 	return &File{
@@ -71,12 +71,12 @@ func (r *Query) Container(opts ...ContainerOpts) *Container { // sindri-dev (../
 
 // ServiceOpts contains options for Query.Service
 type ServiceOpts struct {
-	Backend string // sindri-dev (../../.dagger/main.go:119:2)
+	Backend string // sindri-dev (../../.dagger/main.go:110:2)
 
-	Module string // sindri-dev (../../.dagger/main.go:121:2)
+	Module string // sindri-dev (../../.dagger/main.go:112:2)
 }
 
-func (r *Query) Service(opts ...ServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:116:1)
+func (r *Query) Service(opts ...ServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:107:1)
 	q := r.query.Select("service")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `backend` optional argument
@@ -94,7 +94,7 @@ func (r *Query) Service(opts ...ServiceOpts) *Service { // sindri-dev (../../.da
 	}
 }
 
-func (r *Query) Tag(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:189:1)
+func (r *Query) Tag(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:180:1)
 	q := r.query.Select("tag")
 
 	var response string
@@ -103,13 +103,13 @@ func (r *Query) Tag(ctx context.Context) (string, error) { // sindri-dev (../../
 	return response, q.Execute(ctx)
 }
 
-func (r *Query) Test(ctx context.Context) error { // sindri-dev (../../.dagger/main.go:207:1)
+func (r *Query) Test(ctx context.Context) error { // sindri-dev (../../.dagger/main.go:198:1)
 	q := r.query.Select("test")
 
 	return q.Execute(ctx)
 }
 
-func (r *Query) Version(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:162:1)
+func (r *Query) Version(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:153:1)
 	q := r.query.Select("version")
 
 	var response string
@@ -133,7 +133,7 @@ func (r *SindriDev) WithGraphQLQuery(q *querybuilder.Selection) *SindriDev {
 	}
 }
 
-func (r *SindriDev) Binary() *File { // sindri-dev (../../.dagger/main.go:194:1)
+func (r *SindriDev) Binary() *File { // sindri-dev (../../.dagger/main.go:185:1)
 	q := r.query.Select("binary")
 
 	return &File{
@@ -202,12 +202,12 @@ func (r *SindriDev) MarshalJSON() ([]byte, error) {
 
 // SindriDevServiceOpts contains options for SindriDev.Service
 type SindriDevServiceOpts struct {
-	Backend string // sindri-dev (../../.dagger/main.go:119:2)
+	Backend string // sindri-dev (../../.dagger/main.go:110:2)
 
-	Module string // sindri-dev (../../.dagger/main.go:121:2)
+	Module string // sindri-dev (../../.dagger/main.go:112:2)
 }
 
-func (r *SindriDev) Service(opts ...SindriDevServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:116:1)
+func (r *SindriDev) Service(opts ...SindriDevServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:107:1)
 	q := r.query.Select("service")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `backend` optional argument
@@ -233,7 +233,7 @@ func (r *SindriDev) Source() *Directory { // sindri-dev (../../.dagger/main.go:1
 	}
 }
 
-func (r *SindriDev) Tag(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:189:1)
+func (r *SindriDev) Tag(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:180:1)
 	if r.tag != nil {
 		return *r.tag, nil
 	}
@@ -245,7 +245,7 @@ func (r *SindriDev) Tag(ctx context.Context) (string, error) { // sindri-dev (..
 	return response, q.Execute(ctx)
 }
 
-func (r *SindriDev) Test(ctx context.Context) error { // sindri-dev (../../.dagger/main.go:207:1)
+func (r *SindriDev) Test(ctx context.Context) error { // sindri-dev (../../.dagger/main.go:198:1)
 	if r.test != nil {
 		return nil
 	}
@@ -254,7 +254,7 @@ func (r *SindriDev) Test(ctx context.Context) error { // sindri-dev (../../.dagg
 	return q.Execute(ctx)
 }
 
-func (r *SindriDev) Version(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:162:1)
+func (r *SindriDev) Version(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:153:1)
 	if r.version != nil {
 		return *r.version, nil
 	}
