@@ -17780,8 +17780,8 @@ func serveModuleDependencies(ctx context.Context, client *Client) error {
 	}
 
 	if err := client.ModuleSource(
-		"github.com/dagger/dagger/modules/wolfi@v0.21.6",
-		ModuleSourceOpts{RefPin: "76c1bf81f55b7cd7dcc5b83ee5a04caf1ffb98ad"},
+		"github.com/dagger/dagger/modules/wolfi@v0.21.7",
+		ModuleSourceOpts{RefPin: "054f94b2d86c0ac00bef11ac4550816973c4aeef"},
 	).
 		WithName("wolfi").
 		AsModule().
