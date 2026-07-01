@@ -10,7 +10,7 @@ import (
 )
 
 // Retrieve the binding value, as type Mise
-func (r *Binding) AsMise() *Mise { // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L144)
+func (r *Binding) AsMise() *Mise { // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L144)
 	q := r.query.Select("asMise")
 
 	return &Mise{
@@ -19,7 +19,7 @@ func (r *Binding) AsMise() *Mise { // mise (https://github.com/frantjc/daggerver
 }
 
 // Create or update a binding of type Mise in the environment
-func (r *Env) WithMiseInput(name string, value *Mise, description string) *Env { // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L144)
+func (r *Env) WithMiseInput(name string, value *Mise, description string) *Env { // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L144)
 	assertNotNil("value", value)
 	q := r.query.Select("withMiseInput")
 	q = q.Arg("name", name)
@@ -32,7 +32,7 @@ func (r *Env) WithMiseInput(name string, value *Mise, description string) *Env {
 }
 
 // Declare a desired Mise output to be assigned in the environment
-func (r *Env) WithMiseOutput(name string, description string) *Env { // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L144)
+func (r *Env) WithMiseOutput(name string, description string) *Env { // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L144)
 	q := r.query.Select("withMiseOutput")
 	q = q.Arg("name", name)
 	q = q.Arg("description", description)
@@ -42,7 +42,7 @@ func (r *Env) WithMiseOutput(name string, description string) *Env { // mise (ht
 	}
 }
 
-type Mise struct { // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L144)
+type Mise struct { // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L144)
 	query *querybuilder.Selection
 
 	id *ID
@@ -56,18 +56,18 @@ func (r *Mise) WithGraphQLQuery(q *querybuilder.Selection) *Mise {
 
 // MiseContainerOpts contains options for Mise.Container
 type MiseContainerOpts struct {
-	NoEnv bool // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L188)
+	NoEnv bool // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L189)
 
-	NoHooks bool // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L190)
+	NoHooks bool // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L191)
 
-	Tools []string // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L192)
+	Tools []string // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L193)
 
-	Include []string // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L194)
+	Include []string // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L195)
 
-	Container *Container // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L196)
+	Container *Container // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L197)
 }
 
-func (r *Mise) Container(opts ...MiseContainerOpts) *Container { // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L185)
+func (r *Mise) Container(opts ...MiseContainerOpts) *Container { // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L186)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `noEnv` optional argument
@@ -147,18 +147,25 @@ func (r *Mise) AsNode() Node {
 
 // MiseOpts contains options for Query.Mise
 type MiseOpts struct {
-	Source *Directory // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L155)
+	Workspace *Workspace // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L153)
+
+	// Default: "."
+	Path string // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L156)
 
 	// Default: "2026.5.15"
-	Version string // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L158)
+	Version string // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L159)
 }
 
-func (r *Query) Mise(opts ...MiseOpts) *Mise { // mise (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/mise/main.go#L151)
+func (r *Query) Mise(opts ...MiseOpts) *Mise { // mise (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/mise/main.go#L151)
 	q := r.query.Select("mise")
 	for i := len(opts) - 1; i >= 0; i-- {
-		// `source` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Source) {
-			q = q.Arg("source", opts[i].Source)
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+		// `path` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Path) {
+			q = q.Arg("path", opts[i].Path)
 		}
 		// `version` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Version) {

@@ -11,7 +11,7 @@
     {
       "name": "go",
       "source": "github.com/frantjc/daggerverse/go@main",
-      "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245",
+      "pin": "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a",
       "ignoreChecks": [
         "test"
       ]
@@ -21,17 +21,17 @@
     {
       "name": "arch",
       "source": "github.com/frantjc/daggerverse/arch@main",
-      "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"
+      "pin": "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"
     },
     {
       "name": "archive",
       "source": "github.com/frantjc/daggerverse/archive@main",
-      "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"
+      "pin": "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"
     },
     {
       "name": "mise",
       "source": "github.com/frantjc/daggerverse/mise@main",
-      "pin": "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"
+      "pin": "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"
     },
     {
       "name": "sindri",

@@ -9,7 +9,7 @@ import (
 	"github.com/dagger/querybuilder"
 )
 
-type Arch struct { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L9)
+type Arch struct { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L9)
 	query *querybuilder.Selection
 
 	gnu       *string
@@ -25,7 +25,7 @@ func (r *Arch) WithGraphQLQuery(q *querybuilder.Selection) *Arch {
 }
 
 // GNU returns the architecture in GNU/uname naming (e.g. "x86_64", "aarch64").
-func (r *Arch) Gnu(ctx context.Context) (string, error) { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L38)
+func (r *Arch) Gnu(ctx context.Context) (string, error) { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L38)
 	if r.gnu != nil {
 		return *r.gnu, nil
 	}
@@ -78,7 +78,7 @@ func (r *Arch) MarshalJSON() ([]byte, error) {
 }
 
 // Microsoft returns the architecture in Microsoft naming (e.g. "x64", "arm64").
-func (r *Arch) Microsoft(ctx context.Context) (string, error) { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L54)
+func (r *Arch) Microsoft(ctx context.Context) (string, error) { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L54)
 	if r.microsoft != nil {
 		return *r.microsoft, nil
 	}
@@ -91,7 +91,7 @@ func (r *Arch) Microsoft(ctx context.Context) (string, error) { // arch (https:/
 }
 
 // OCI returns the architecture in OCI/Go naming (e.g. "amd64", "arm64").
-func (r *Arch) Oci(ctx context.Context) (string, error) { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L33)
+func (r *Arch) Oci(ctx context.Context) (string, error) { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L33)
 	if r.oci != nil {
 		return *r.oci, nil
 	}
@@ -112,7 +112,7 @@ func (r *Arch) AsNode() Node {
 }
 
 // Retrieve the binding value, as type Arch
-func (r *Binding) AsArch() *Arch { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L9)
+func (r *Binding) AsArch() *Arch { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L9)
 	q := r.query.Select("asArch")
 
 	return &Arch{
@@ -121,7 +121,7 @@ func (r *Binding) AsArch() *Arch { // arch (https://github.com/frantjc/daggerver
 }
 
 // Create or update a binding of type Arch in the environment
-func (r *Env) WithArchInput(name string, value *Arch, description string) *Env { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L9)
+func (r *Env) WithArchInput(name string, value *Arch, description string) *Env { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L9)
 	assertNotNil("value", value)
 	q := r.query.Select("withArchInput")
 	q = q.Arg("name", name)
@@ -134,7 +134,7 @@ func (r *Env) WithArchInput(name string, value *Arch, description string) *Env {
 }
 
 // Declare a desired Arch output to be assigned in the environment
-func (r *Env) WithArchOutput(name string, description string) *Env { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L9)
+func (r *Env) WithArchOutput(name string, description string) *Env { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L9)
 	q := r.query.Select("withArchOutput")
 	q = q.Arg("name", name)
 	q = q.Arg("description", description)
@@ -144,7 +144,7 @@ func (r *Env) WithArchOutput(name string, description string) *Env { // arch (ht
 	}
 }
 
-func (r *Query) Arch() *Arch { // arch (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/arch/main.go#L16)
+func (r *Query) Arch() *Arch { // arch (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/arch/main.go#L16)
 	q := r.query.Select("arch")
 
 	return &Arch{

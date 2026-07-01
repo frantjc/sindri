@@ -63,9 +63,9 @@ func Archive(opts ...dagger.ArchiveOpts) *dagger.Archive {
 	return client.Archive(opts...)
 }
 
-func Binary() *dagger.File {
+func Binary(opts ...dagger.BinaryOpts) *dagger.File {
 	client := initClient()
-	return client.Binary()
+	return client.Binary(opts...)
 }
 
 // Constructs a cache volume for a given cache key.
@@ -717,25 +717,20 @@ func Sindri() *dagger.Sindri {
 	return client.Sindri()
 }
 
-func Source() *dagger.Directory {
-	client := initClient()
-	return client.Source()
-}
-
 // Creates source map metadata.
 func SourceMap(filename string, line int, column int) *dagger.SourceMap {
 	client := initClient()
 	return client.SourceMap(filename, line, column)
 }
 
-func Tag(ctx context.Context) (string, error) {
+func Tag(ctx context.Context, opts ...dagger.TagOpts) (string, error) {
 	client := initClient()
-	return client.Tag(ctx)
+	return client.Tag(ctx, opts...)
 }
 
-func Test(ctx context.Context) error {
+func Test(ctx context.Context, opts ...dagger.TestOpts) error {
 	client := initClient()
-	return client.Test(ctx)
+	return client.Test(ctx, opts...)
 }
 
 // Create a new TypeDef.
@@ -744,15 +739,9 @@ func TypeDef() *dagger.TypeDef {
 	return client.TypeDef()
 }
 
-func Version(ctx context.Context) (string, error) {
+func Version(ctx context.Context, opts ...dagger.VersionOpts) (string, error) {
 	client := initClient()
-	return client.Version(ctx)
-}
-
-// Configure the sindri-dev constructor arguments.
-func With(opts ...dagger.WithOpts) *dagger.Query {
-	client := initClient()
-	return client.With(opts...)
+	return client.Version(ctx, opts...)
 }
 
 // A Wolfi Linux configuration

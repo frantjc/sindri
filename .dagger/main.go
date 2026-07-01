@@ -13,20 +13,7 @@ import (
 	"github.com/frantjc/sindri/.dagger/internal/dagger"
 )
 
-type SindriDev struct {
-	Source *dagger.Directory
-}
-
-func New(
-	ctx context.Context,
-	// +optional
-	// +defaultPath="."
-	source *dagger.Directory,
-) (*SindriDev, error) {
-	return &SindriDev{
-		Source: source,
-	}, nil
-}
+type SindriDev struct {}
 
 const (
 	gid            = "1001"
@@ -42,6 +29,7 @@ const (
 // +check
 func (m *SindriDev) Container(
 	ctx context.Context,
+	workspace *dagger.Workspace,
 	// +optional
 	module string,
 ) (*dagger.Container, error) {
@@ -79,7 +67,7 @@ func (m *SindriDev) Container(
 		WithExec([]string{"adduser", "-S", "-G", group, "-u", uid, user}).
 		WithEnvVariable("PATH", home+"/.local/bin:$PATH", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithFile(
-			home+"/.local/bin/sindri", dag.SindriDev(dagger.SindriDevOpts{Source: m.Source}).Binary(),
+			home+"/.local/bin/sindri", dag.SindriDev().Binary(),
 			dagger.ContainerWithFileOpts{Expand: true, Owner: owner, Permissions: 0700}).
 		WithEnvVariable("_EXPERIMENTAL_DAGGER_CLI_BIN", home+"/.local/bin/dagger").
 		WithFile(
@@ -94,12 +82,13 @@ func (m *SindriDev) Container(
 		WithExec([]string{"chown", "-R", owner, home}).
 		WithUser(user).
 		WithWorkdir(home+"/.config/sindri/module").
-		WithDirectory(".", m.Source.Directory(path.Join("modules", module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
+		WithDirectory(".", workspace.Directory(path.Join("modules", module)), dagger.ContainerWithDirectoryOpts{Owner: owner}).
 		WithEntrypoint([]string{"sindri"}), nil
 }
 
 func (m *SindriDev) Service(
 	ctx context.Context,
+	workspace *dagger.Workspace,
 	// +optional
 	backend,
 	// +optional
@@ -116,7 +105,7 @@ func (m *SindriDev) Service(
 		return nil, err
 	}
 
-	container, err := m.Container(ctx, module)
+	container, err := m.Container(ctx, workspace, module)
 	if err != nil {
 		return nil, err
 	}
@@ -144,17 +133,23 @@ func (m *SindriDev) Service(
 		}), nil
 }
 
-func (m *SindriDev) Version(ctx context.Context) string {
+func (m *SindriDev) Version(
+	ctx context.Context, 
+	workspace *dagger.Workspace,
+) string {
 	version := "v0.0.0-unknown"
 
-	gitRef := m.Source.AsGit().LatestVersion()
+	source := workspace.Directory(".")
+	gitRef := source.AsGit().LatestVersion()
+
+	
 
 	if ref, err := gitRef.Ref(ctx); err == nil {
 		version = strings.TrimPrefix(ref, "refs/tags/")
 	}
 
 	if latestVersionCommit, err := gitRef.Commit(ctx); err == nil {
-		if headCommit, err := m.Source.AsGit().Head().Commit(ctx); err == nil {
+		if headCommit, err := source.AsGit().Head().Commit(ctx); err == nil {
 			if headCommit != latestVersionCommit {
 				if len(headCommit) > 7 {
 					headCommit = headCommit[:7]
@@ -164,32 +159,39 @@ func (m *SindriDev) Version(ctx context.Context) string {
 		}
 	}
 
-	if empty, _ := m.Source.AsGit().Uncommitted().IsEmpty(ctx); !empty {
+	if empty, _ := source.AsGit().Uncommitted().IsEmpty(ctx); !empty {
 		version += "+dirty"
 	}
 
 	return version
 }
 
-func (m *SindriDev) Tag(ctx context.Context) string {
-	before, _, _ := strings.Cut(strings.TrimPrefix(m.Version(ctx), "v"), "+")
+func (m *SindriDev) Tag(
+	ctx context.Context,
+	workspace *dagger.Workspace,
+) string {
+	before, _, _ := strings.Cut(strings.TrimPrefix(m.Version(ctx, workspace), "v"), "+")
 	return before
 }
 
-func (m *SindriDev) Binary(ctx context.Context) *dagger.File {
+func (m *SindriDev) Binary(
+	ctx context.Context,
+	workspace *dagger.Workspace,
+) *dagger.File {
 	return dag.Go(dagger.GoOpts{
-		Source: m.Source.Filter(dagger.DirectoryFilterOpts{
-			Exclude: []string{".github/", "e2e/"},
-		}),
+		Workspace: workspace,
 	}).
 		Build(dagger.GoBuildOpts{
 			Pkg:     "./cmd/sindri",
-			Ldflags: "-s -w -X main.version=" + m.Version(ctx),
+			Ldflags: "-s -w -X main.version=" + m.Version(ctx, workspace),
 		})
 }
 
 // +check
-func (m *SindriDev) Test(ctx context.Context) error {
+func (m *SindriDev) Test(
+	ctx context.Context,
+	workspace *dagger.Workspace,
+) error {
 	tags := []string{
 		"dagger",
 		"git",
@@ -197,7 +199,7 @@ func (m *SindriDev) Test(ctx context.Context) error {
 		"wolfi",
 	}
 	return dag.Go(dagger.GoOpts{
-		Source: m.Source,
+		Workspace: workspace,
 	}).
 		Test(ctx, dagger.GoTestOpts{
 			Race: true,

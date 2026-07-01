@@ -14018,14 +14018,6 @@ func (r *Query) SetSecret(name string, plaintext string) *Secret {
 	}
 }
 
-func (r *Query) Source() *Directory {
-	q := r.query.Select("source")
-
-	return &Directory{
-		query: q,
-	}
-}
-
 // Creates source map metadata.
 func (r *Query) SourceMap(filename string, line int, column int) *SourceMap {
 	q := r.query.Select("sourceMap")
@@ -14043,26 +14035,6 @@ func (r *Query) TypeDef() *TypeDef {
 	q := r.query.Select("typeDef")
 
 	return &TypeDef{
-		query: q,
-	}
-}
-
-// WithOpts contains options for Query.With
-type WithOpts struct {
-	Source *Directory // sindri-dev (../../.dagger/main.go:24:2)
-}
-
-// Configure the sindri-dev constructor arguments.
-func (r *Query) With(opts ...WithOpts) *Query {
-	q := r.query.Select("with")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `source` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Source) {
-			q = q.Arg("source", opts[i].Source)
-		}
-	}
-
-	return &Query{
 		query: q,
 	}
 }
@@ -17751,7 +17723,7 @@ func (c *Client) Do(ctx context.Context, req *Request, resp *Response) error {
 func serveModuleDependencies(ctx context.Context, client *Client) error {
 	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/arch@main",
-		ModuleSourceOpts{RefPin: "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"},
+		ModuleSourceOpts{RefPin: "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"},
 	).
 		WithName("arch").
 		AsModule().
@@ -17761,7 +17733,7 @@ func serveModuleDependencies(ctx context.Context, client *Client) error {
 
 	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/archive@main",
-		ModuleSourceOpts{RefPin: "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"},
+		ModuleSourceOpts{RefPin: "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"},
 	).
 		WithName("archive").
 		AsModule().
@@ -17771,7 +17743,7 @@ func serveModuleDependencies(ctx context.Context, client *Client) error {
 
 	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/mise@main",
-		ModuleSourceOpts{RefPin: "382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245"},
+		ModuleSourceOpts{RefPin: "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"},
 	).
 		WithName("mise").
 		AsModule().

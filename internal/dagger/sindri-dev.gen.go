@@ -42,8 +42,19 @@ func (r *Env) WithSindriDevOutput(name string, description string) *Env { // sin
 	}
 }
 
-func (r *Query) Binary() *File { // sindri-dev (../../.dagger/main.go:179:1)
+// BinaryOpts contains options for Query.Binary
+type BinaryOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:179:2)
+}
+
+func (r *Query) Binary(opts ...BinaryOpts) *File { // sindri-dev (../../.dagger/main.go:177:1)
 	q := r.query.Select("binary")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	return &File{
 		query: q,
@@ -52,12 +63,18 @@ func (r *Query) Binary() *File { // sindri-dev (../../.dagger/main.go:179:1)
 
 // ContainerOpts contains options for Query.Container
 type ContainerOpts struct {
-	Module string // sindri-dev (../../.dagger/main.go:46:2)
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:32:2)
+
+	Module string // sindri-dev (../../.dagger/main.go:34:2)
 }
 
-func (r *Query) Container(opts ...ContainerOpts) *Container { // sindri-dev (../../.dagger/main.go:43:1)
+func (r *Query) Container(opts ...ContainerOpts) *Container { // sindri-dev (../../.dagger/main.go:30:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
 		// `module` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Module) {
 			q = q.Arg("module", opts[i].Module)
@@ -71,14 +88,20 @@ func (r *Query) Container(opts ...ContainerOpts) *Container { // sindri-dev (../
 
 // ServiceOpts contains options for Query.Service
 type ServiceOpts struct {
-	Backend string // sindri-dev (../../.dagger/main.go:104:2)
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:91:2)
 
-	Module string // sindri-dev (../../.dagger/main.go:106:2)
+	Backend string // sindri-dev (../../.dagger/main.go:93:2)
+
+	Module string // sindri-dev (../../.dagger/main.go:95:2)
 }
 
-func (r *Query) Service(opts ...ServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:101:1)
+func (r *Query) Service(opts ...ServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:89:1)
 	q := r.query.Select("service")
 	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
 		// `backend` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Backend) {
 			q = q.Arg("backend", opts[i].Backend)
@@ -94,8 +117,19 @@ func (r *Query) Service(opts ...ServiceOpts) *Service { // sindri-dev (../../.da
 	}
 }
 
-func (r *Query) Tag(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:174:1)
+// TagOpts contains options for Query.Tag
+type TagOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:171:2)
+}
+
+func (r *Query) Tag(ctx context.Context, opts ...TagOpts) (string, error) { // sindri-dev (../../.dagger/main.go:169:1)
 	q := r.query.Select("tag")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	var response string
 
@@ -103,14 +137,36 @@ func (r *Query) Tag(ctx context.Context) (string, error) { // sindri-dev (../../
 	return response, q.Execute(ctx)
 }
 
-func (r *Query) Test(ctx context.Context) error { // sindri-dev (../../.dagger/main.go:192:1)
+// TestOpts contains options for Query.Test
+type TestOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:195:2)
+}
+
+func (r *Query) Test(ctx context.Context, opts ...TestOpts) error { // sindri-dev (../../.dagger/main.go:193:1)
 	q := r.query.Select("test")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	return q.Execute(ctx)
 }
 
-func (r *Query) Version(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:147:1)
+// VersionOpts contains options for Query.Version
+type VersionOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:138:2)
+}
+
+func (r *Query) Version(ctx context.Context, opts ...VersionOpts) (string, error) { // sindri-dev (../../.dagger/main.go:136:1)
 	q := r.query.Select("version")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	var response string
 
@@ -133,8 +189,19 @@ func (r *SindriDev) WithGraphQLQuery(q *querybuilder.Selection) *SindriDev {
 	}
 }
 
-func (r *SindriDev) Binary() *File { // sindri-dev (../../.dagger/main.go:179:1)
+// SindriDevBinaryOpts contains options for SindriDev.Binary
+type SindriDevBinaryOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:179:2)
+}
+
+func (r *SindriDev) Binary(opts ...SindriDevBinaryOpts) *File { // sindri-dev (../../.dagger/main.go:177:1)
 	q := r.query.Select("binary")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	return &File{
 		query: q,
@@ -143,12 +210,18 @@ func (r *SindriDev) Binary() *File { // sindri-dev (../../.dagger/main.go:179:1)
 
 // SindriDevContainerOpts contains options for SindriDev.Container
 type SindriDevContainerOpts struct {
-	Module string // sindri-dev (../../.dagger/main.go:46:2)
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:32:2)
+
+	Module string // sindri-dev (../../.dagger/main.go:34:2)
 }
 
-func (r *SindriDev) Container(opts ...SindriDevContainerOpts) *Container { // sindri-dev (../../.dagger/main.go:43:1)
+func (r *SindriDev) Container(opts ...SindriDevContainerOpts) *Container { // sindri-dev (../../.dagger/main.go:30:1)
 	q := r.query.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
 		// `module` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Module) {
 			q = q.Arg("module", opts[i].Module)
@@ -202,14 +275,20 @@ func (r *SindriDev) MarshalJSON() ([]byte, error) {
 
 // SindriDevServiceOpts contains options for SindriDev.Service
 type SindriDevServiceOpts struct {
-	Backend string // sindri-dev (../../.dagger/main.go:104:2)
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:91:2)
 
-	Module string // sindri-dev (../../.dagger/main.go:106:2)
+	Backend string // sindri-dev (../../.dagger/main.go:93:2)
+
+	Module string // sindri-dev (../../.dagger/main.go:95:2)
 }
 
-func (r *SindriDev) Service(opts ...SindriDevServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:101:1)
+func (r *SindriDev) Service(opts ...SindriDevServiceOpts) *Service { // sindri-dev (../../.dagger/main.go:89:1)
 	q := r.query.Select("service")
 	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
 		// `backend` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Backend) {
 			q = q.Arg("backend", opts[i].Backend)
@@ -225,19 +304,22 @@ func (r *SindriDev) Service(opts ...SindriDevServiceOpts) *Service { // sindri-d
 	}
 }
 
-func (r *SindriDev) Source() *Directory { // sindri-dev (../../.dagger/main.go:17:2)
-	q := r.query.Select("source")
-
-	return &Directory{
-		query: q,
-	}
+// SindriDevTagOpts contains options for SindriDev.Tag
+type SindriDevTagOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:171:2)
 }
 
-func (r *SindriDev) Tag(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:174:1)
+func (r *SindriDev) Tag(ctx context.Context, opts ...SindriDevTagOpts) (string, error) { // sindri-dev (../../.dagger/main.go:169:1)
 	if r.tag != nil {
 		return *r.tag, nil
 	}
 	q := r.query.Select("tag")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	var response string
 
@@ -245,20 +327,42 @@ func (r *SindriDev) Tag(ctx context.Context) (string, error) { // sindri-dev (..
 	return response, q.Execute(ctx)
 }
 
-func (r *SindriDev) Test(ctx context.Context) error { // sindri-dev (../../.dagger/main.go:192:1)
+// SindriDevTestOpts contains options for SindriDev.Test
+type SindriDevTestOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:195:2)
+}
+
+func (r *SindriDev) Test(ctx context.Context, opts ...SindriDevTestOpts) error { // sindri-dev (../../.dagger/main.go:193:1)
 	if r.test != nil {
 		return nil
 	}
 	q := r.query.Select("test")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	return q.Execute(ctx)
 }
 
-func (r *SindriDev) Version(ctx context.Context) (string, error) { // sindri-dev (../../.dagger/main.go:147:1)
+// SindriDevVersionOpts contains options for SindriDev.Version
+type SindriDevVersionOpts struct {
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:138:2)
+}
+
+func (r *SindriDev) Version(ctx context.Context, opts ...SindriDevVersionOpts) (string, error) { // sindri-dev (../../.dagger/main.go:136:1)
 	if r.version != nil {
 		return *r.version, nil
 	}
 	q := r.query.Select("version")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `workspace` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Workspace) {
+			q = q.Arg("workspace", opts[i].Workspace)
+		}
+	}
 
 	var response string
 

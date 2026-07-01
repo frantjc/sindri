@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cli/cli/v2/api"
-	"github.com/cli/cli/v2/pkg/cmd/factory"
+	ghauth "github.com/cli/go-gh/v2/pkg/auth"
+	"github.com/cli/go-gh/v2/pkg/config"
 	"github.com/fluxcd/pkg/auth"
 	"github.com/fluxcd/pkg/auth/aws"
 	"github.com/fluxcd/pkg/auth/azure"
@@ -83,32 +83,23 @@ func (r *Registry) getRegistryAuth(ctx context.Context, ref string) (string, str
 
 	switch {
 	case r.Host == "ghcr.io":
-		cfg, err := factory.New("v0.0.0-unknown").Config()
+		cfg, err := config.Read(new(config.Config))
 		if err != nil {
 			return "", "", false, err
 		}
 
-		authCfg := cfg.Authentication()
-
-		httpClient, err := api.NewHTTPClient(api.HTTPClientOptions{
-			Config: authCfg,
-		})
+		hostname := "github.com"
+		user, err := cfg.Get([]string{"hosts", hostname, "user"})
 		if err != nil {
 			return "", "", false, err
 		}
 
-		username, err := authCfg.ActiveUser("github.com")
-		if err != nil {
-			var nerr error
-			username, nerr = api.CurrentLoginName(api.NewClientFromHTTP(httpClient), "github.com")
-			if nerr != nil {
-				return "", "", false, fmt.Errorf("%v: %v", err, nerr)
-			}
+		token, _ := ghauth.TokenForHost(hostname)
+		if token == "" {
+			return "", "", false, nil
 		}
 
-		password, _ := authCfg.ActiveToken("github.com")
-
-		return username, password, true, nil
+		return user, token, true, nil
 	case xslices.Some([]string{".azurecr.io", ".azurecr.us", ".azurecr.cn"}, func(suffix string, _ int) bool {
 		return strings.HasSuffix(r.Host, suffix)
 	}):

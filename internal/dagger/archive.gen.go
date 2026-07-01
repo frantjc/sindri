@@ -9,7 +9,7 @@ import (
 	"github.com/dagger/querybuilder"
 )
 
-type Archive struct { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L11)
+type Archive struct { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L11)
 	query *querybuilder.Selection
 
 	id *ID
@@ -63,10 +63,10 @@ func (r *Archive) MarshalJSON() ([]byte, error) {
 
 // ArchiveTarOpts contains options for Archive.Tar
 type ArchiveTarOpts struct {
-	Gzip bool // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L32)
+	Gzip bool // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L32)
 }
 
-func (r *Archive) Tar(directory *Directory, opts ...ArchiveTarOpts) *File { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L28)
+func (r *Archive) Tar(directory *Directory, opts ...ArchiveTarOpts) *File { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L28)
 	assertNotNil("directory", directory)
 	q := r.query.Select("tar")
 	for i := len(opts) - 1; i >= 0; i-- {
@@ -82,7 +82,7 @@ func (r *Archive) Tar(directory *Directory, opts ...ArchiveTarOpts) *File { // a
 	}
 }
 
-func (r *Archive) Untar(file *File) *Directory { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L54)
+func (r *Archive) Untar(file *File) *Directory { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L54)
 	assertNotNil("file", file)
 	q := r.query.Select("untar")
 	q = q.Arg("file", file)
@@ -92,7 +92,7 @@ func (r *Archive) Untar(file *File) *Directory { // archive (https://github.com/
 	}
 }
 
-func (r *Archive) Zip(directory *Directory) *File { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L86)
+func (r *Archive) Zip(directory *Directory) *File { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L86)
 	assertNotNil("directory", directory)
 	q := r.query.Select("zip")
 	q = q.Arg("directory", directory)
@@ -111,7 +111,7 @@ func (r *Archive) AsNode() Node {
 }
 
 // Retrieve the binding value, as type Archive
-func (r *Binding) AsArchive() *Archive { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L11)
+func (r *Binding) AsArchive() *Archive { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L11)
 	q := r.query.Select("asArchive")
 
 	return &Archive{
@@ -120,7 +120,7 @@ func (r *Binding) AsArchive() *Archive { // archive (https://github.com/frantjc/
 }
 
 // Create or update a binding of type Archive in the environment
-func (r *Env) WithArchiveInput(name string, value *Archive, description string) *Env { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L11)
+func (r *Env) WithArchiveInput(name string, value *Archive, description string) *Env { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L11)
 	assertNotNil("value", value)
 	q := r.query.Select("withArchiveInput")
 	q = q.Arg("name", name)
@@ -133,7 +133,7 @@ func (r *Env) WithArchiveInput(name string, value *Archive, description string) 
 }
 
 // Declare a desired Archive output to be assigned in the environment
-func (r *Env) WithArchiveOutput(name string, description string) *Env { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L11)
+func (r *Env) WithArchiveOutput(name string, description string) *Env { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L11)
 	q := r.query.Select("withArchiveOutput")
 	q = q.Arg("name", name)
 	q = q.Arg("description", description)
@@ -145,10 +145,10 @@ func (r *Env) WithArchiveOutput(name string, description string) *Env { // archi
 
 // ArchiveOpts contains options for Query.Archive
 type ArchiveOpts struct {
-	Container *Container // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L18)
+	Container *Container // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L18)
 }
 
-func (r *Query) Archive(opts ...ArchiveOpts) *Archive { // archive (https://github.com/frantjc/daggerverse/tree/382d2a0f8aa4fdd0ba466d77fc3e2aea6eb5b245/archive/main.go#L16)
+func (r *Query) Archive(opts ...ArchiveOpts) *Archive { // archive (https://github.com/frantjc/daggerverse/tree/f22c1fc85dfa656d4216ea5a5086dee4eabefd5a/archive/main.go#L16)
 	q := r.query.Select("archive")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `container` optional argument
