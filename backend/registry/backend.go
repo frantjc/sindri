@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	ghauth "github.com/cli/go-gh/v2/pkg/auth"
-	"github.com/cli/go-gh/v2/pkg/config"
 	"github.com/fluxcd/pkg/auth"
 	"github.com/fluxcd/pkg/auth/aws"
 	"github.com/fluxcd/pkg/auth/azure"
@@ -83,23 +82,11 @@ func (r *Registry) getRegistryAuth(ctx context.Context, ref string) (string, str
 
 	switch {
 	case r.Host == "ghcr.io":
-		cfg, err := config.Read(new(config.Config))
-		if err != nil {
-			return "", "", false, err
+		host, _ := ghauth.DefaultHost()
+		if token, _ := ghauth.TokenForHost(host); token != "" {
+			return "x-access-token", token, true, nil
 		}
-
-		hostname := "github.com"
-		user, err := cfg.Get([]string{"hosts", hostname, "user"})
-		if err != nil {
-			return "", "", false, err
-		}
-
-		token, _ := ghauth.TokenForHost(hostname)
-		if token == "" {
-			return "", "", false, nil
-		}
-
-		return user, token, true, nil
+		return "", "", false, nil
 	case xslices.Some([]string{".azurecr.io", ".azurecr.us", ".azurecr.cn"}, func(suffix string, _ int) bool {
 		return strings.HasSuffix(r.Host, suffix)
 	}):
