@@ -43,7 +43,11 @@ func init() {
 			useSignedURLs := false
 			if useSignedURLsParam := q.Get(useSignedURLsParamKey); useSignedURLsParam != "" {
 				q.Del(useSignedURLsParamKey)
-				useSignedURLs, _ = strconv.ParseBool(q.Get(useSignedURLsParamKey))
+				var err error
+				useSignedURLs, err = strconv.ParseBool(useSignedURLsParam)
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			v, _ := url.Parse(u.String())
