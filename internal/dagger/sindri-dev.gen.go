@@ -139,10 +139,10 @@ func (r *Query) Tag(ctx context.Context, opts ...TagOpts) (string, error) { // s
 
 // TestOpts contains options for Query.Test
 type TestOpts struct {
-	Workspace *Workspace // sindri-dev (../../.dagger/main.go:195:2)
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:193:2)
 }
 
-func (r *Query) Test(ctx context.Context, opts ...TestOpts) error { // sindri-dev (../../.dagger/main.go:193:1)
+func (r *Query) Test(ctx context.Context, opts ...TestOpts) error { // sindri-dev (../../.dagger/main.go:191:1)
 	q := r.query.Select("test")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `workspace` optional argument
@@ -329,10 +329,10 @@ func (r *SindriDev) Tag(ctx context.Context, opts ...SindriDevTagOpts) (string, 
 
 // SindriDevTestOpts contains options for SindriDev.Test
 type SindriDevTestOpts struct {
-	Workspace *Workspace // sindri-dev (../../.dagger/main.go:195:2)
+	Workspace *Workspace // sindri-dev (../../.dagger/main.go:193:2)
 }
 
-func (r *SindriDev) Test(ctx context.Context, opts ...SindriDevTestOpts) error { // sindri-dev (../../.dagger/main.go:193:1)
+func (r *SindriDev) Test(ctx context.Context, opts ...SindriDevTestOpts) error { // sindri-dev (../../.dagger/main.go:191:1)
 	if r.test != nil {
 		return nil
 	}

@@ -193,7 +193,6 @@ func Git(url string, opts ...dagger.GitOpts) *dagger.GitRepository {
 	return client.Git(url, opts...)
 }
 
-// A generated module for Go functions
 func Go(opts ...dagger.GoOpts) *dagger.Go {
 	client := initClient()
 	return client.Go(opts...)

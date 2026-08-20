@@ -17723,7 +17723,7 @@ func (c *Client) Do(ctx context.Context, req *Request, resp *Response) error {
 func serveModuleDependencies(ctx context.Context, client *Client) error {
 	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/arch@main",
-		ModuleSourceOpts{RefPin: "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"},
+		ModuleSourceOpts{RefPin: "d5754653df811e7ba6ea6bffa9fe08592b2d7a07"},
 	).
 		WithName("arch").
 		AsModule().
@@ -17733,7 +17733,7 @@ func serveModuleDependencies(ctx context.Context, client *Client) error {
 
 	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/archive@main",
-		ModuleSourceOpts{RefPin: "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"},
+		ModuleSourceOpts{RefPin: "d5754653df811e7ba6ea6bffa9fe08592b2d7a07"},
 	).
 		WithName("archive").
 		AsModule().
@@ -17742,8 +17742,18 @@ func serveModuleDependencies(ctx context.Context, client *Client) error {
 	}
 
 	if err := client.ModuleSource(
+		"github.com/frantjc/daggerverse/go@main",
+		ModuleSourceOpts{RefPin: "d5754653df811e7ba6ea6bffa9fe08592b2d7a07"},
+	).
+		WithName("go").
+		AsModule().
+		Serve(ctx); err != nil {
+		return err
+	}
+
+	if err := client.ModuleSource(
 		"github.com/frantjc/daggerverse/mise@main",
-		ModuleSourceOpts{RefPin: "f22c1fc85dfa656d4216ea5a5086dee4eabefd5a"},
+		ModuleSourceOpts{RefPin: "d5754653df811e7ba6ea6bffa9fe08592b2d7a07"},
 	).
 		WithName("mise").
 		AsModule().
